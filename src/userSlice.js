@@ -8,6 +8,9 @@ export const userSlice = createSlice({
     user: null,
     repos: null,
     builds: null,
+    buildJobs: null,
+    job: null,
+    jobLog: null,
   },
   reducers: {
     setToken: (state, action) => {
@@ -22,11 +25,27 @@ export const userSlice = createSlice({
     getBuilds: (state, action) => {
       state.builds = action.payload;
     },
+    getBuildJobs: (state, action) => {
+      state.buildJobs = action.payload;
+    },
+    getJob: (state, action) => {
+      state.job = action.payload;
+    },
+    getJobLog: (state, action) => {
+      state.jobLog = action.payload;
+    },
   },
 });
 
 export const { setToken } = userSlice.actions;
-const { setUser, getRepos, getBuilds } = userSlice.actions;
+const {
+  setUser,
+  getRepos,
+  getBuilds,
+  getBuildJobs,
+  getJob,
+  getJobLog,
+} = userSlice.actions;
 
 export const setUserAsync = (token) => (dispatch) => {
   axios
@@ -74,9 +93,76 @@ export const getBuildsAsync = (token, repo_id) => (dispatch) => {
     });
 };
 
+export const getLogAsync = (token, build_id) => (dispatch) => {
+  axios
+    .get("/build_log", {
+      params: {
+        token: token,
+        build_id: build_id,
+      },
+    })
+    .then((res) => {
+      dispatch(getLog(res.data));
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+export const getBuildJobsAsync = (token, build_id) => (dispatch) => {
+  axios
+    .get("/buildJobs", {
+      params: {
+        token: token,
+        build_id: build_id,
+      },
+    })
+    .then((res) => {
+      dispatch(getBuildJobs(res.data));
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+export const getJobAsync = (token, job_id) => (dispatch) => {
+  axios
+    .get("/job", {
+      params: {
+        token: token,
+        job_id: job_id,
+      },
+    })
+    .then((res) => {
+      dispatch(getJob(res.data));
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
+export const getJobLogAsync = (token, job_id) => (dispatch) => {
+  axios
+    .get("/jobLog", {
+      params: {
+        token: token,
+        job_id: job_id,
+      },
+    })
+    .then((res) => {
+      dispatch(getJobLog(res.data));
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
 export const selectToken = (state) => state.user.token;
 export const selectUser = (state) => state.user.user;
 export const selectRepos = (state) => state.user.repos;
 export const selectBuilds = (state) => state.user.builds;
+export const selectBuildJobs = (state) => state.user.buildJobs;
+export const selectJob = (state) => state.user.job;
+export const selectJobLog = (state) => state.user.jobLog;
 
 export default userSlice.reducer;

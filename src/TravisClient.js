@@ -5,10 +5,15 @@ import {
   setUserAsync,
   getReposAsync,
   getBuildsAsync,
+  getBuildJobsAsync,
+  getJobLogAsync,
   selectToken,
   selectUser,
   selectRepos,
   selectBuilds,
+  selectBuildJobs,
+  selectJob,
+  selectJobLog,
 } from "./userSlice";
 import "./TravisClient.css";
 
@@ -17,6 +22,8 @@ function TravisClient() {
   const token = useSelector(selectToken);
   const repos = useSelector(selectRepos);
   const builds = useSelector(selectBuilds);
+  const buildJobs = useSelector(selectBuildJobs);
+  const jobLog = useSelector(selectJobLog);
   const dispatch = useDispatch();
   return (
     <div>
@@ -35,6 +42,7 @@ function TravisClient() {
       </button>
       {user && (
         <div>
+          <h4>user</h4>
           <table>
             <tbody>
               <tr>
@@ -66,9 +74,9 @@ function TravisClient() {
           </button>
         </div>
       )}
-      {builds && <div>{JSON.stringify(builds, null, 2)}</div>}
       {repos && (
         <div>
+          <h4>repos</h4>
           <table>
             <thead>
               <tr>
@@ -101,43 +109,141 @@ function TravisClient() {
           </table>
         </div>
       )}
+      {builds && (
+        <div>
+          <h4>builds</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>number</th>
+                <th>state</th>
+                <th>duration</th>
+                <th>event_type</th>
+                <th>branch</th>
+                <th>commit</th>
+                <th>started_at</th>
+                <th>finished_at</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {builds.builds.map((item) => {
+                return (
+                  <tr key={item.id}>
+                    <td>{item.number}</td>
+                    <td>{item.state}</td>
+                    <td>{item.duration}</td>
+                    <td>{item.event_type}</td>
+                    <td>{item.branch.name}</td>
+                    <td>
+                      {item.commit && (
+                        <a href={item.commit.compare_url} target="_blank">
+                          {item.commit.message}
+                        </a>
+                      )}
+                    </td>
+                    <td>{item.started_at}</td>
+                    <td>{item.finished_at}</td>
+                    <td>
+                      <button
+                        onClick={(e) => {
+                          dispatch(getBuildJobsAsync(token, item.id));
+                        }}
+                      >
+                        ver jobs
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {buildJobs && (
+        <div>
+          <h4>jobs</h4>
+          <table>
+            <thead>
+              <tr>
+                <th>number</th>
+                <th>state</th>
+                <th>started_at</th>
+                <th>finished_at</th>
+                <th>owner</th>
+                <th>created_at</th>
+                <th>updated_at</th>
+                <th>config</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {buildJobs.jobs.map((item) => {
+                return (
+                  <tr key={item.id}>
+                    <td>{item.number}</td>
+                    <td>{item.state}</td>
+                    <td>{item.started_at}</td>
+                    <td>{item.finished_at}</td>
+                    <td>{item.owner && item.owner.login}</td>
+                    <td>{item.created_at}</td>
+                    <td>{item.updated_at}</td>
+                    <td>
+                      {item.config && (
+                        <table>
+                          <tbody>
+                            <tr>
+                              <td>os</td>
+                              <td>{item.config.os}</td>
+                            </tr>
+                            <tr>
+                              <td>compiler</td>
+                              <td>{item.config.compiler}</td>
+                            </tr>
+                            <tr>
+                              <td>languaje</td>
+                              <td>{item.config.language}</td>
+                            </tr>
+                            <tr>
+                              <td>dist</td>
+                              <td>{item.config.dist}</td>
+                            </tr>
+                            <tr>
+                              <td>env</td>
+                              <td>{item.config.env}</td>
+                            </tr>
+                            <tr>
+                              <td>group</td>
+                              <td>{item.config.group}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      )}
+                    </td>
+                    <td>
+                      <button
+                        onClick={(e) => {
+                          dispatch(getJobLogAsync(token, item.id));
+                        }}
+                      >
+                        ver log
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {jobLog && (
+        <div>
+          <h4>job log</h4>
+          {jobLog.content}
+        </div>
+      )}
     </div>
   );
 }
 
 export default TravisClient;
-
-/*
-<div>
-          <a-scene>
-            <a-entity camera look-controls wasd-controls position="0 2 0">
-              <a-cursor></a-cursor>
-            </a-entity>
-            <a-entity environment></a-entity>
-          </a-scene>
-        </div>
-
-        <button
-        onClick={(e) => {
-          var sceneEl = document.querySelector("a-scene");
-          let posicion_incial = " 1 1 -1.5";
-          let str_geometria = "primitive: plane; width: 3; height: 0.75";
-          let str_alineacion_texto = "center";
-          let str_color = "color: green";
-          let text = "holaaa";
-          let es_visible = true;
-          let entityEl = document.createElement("a-text");
-          entityEl.setAttribute("geometry", str_geometria);
-          entityEl.setAttribute("material", str_color);
-          entityEl.setAttribute("value", text);
-          entityEl.setAttribute("align", str_alineacion_texto);
-          entityEl.setAttribute("anchor", "center");
-          entityEl.setAttribute("baseline", "center");
-          entityEl.setAttribute("position", posicion_incial);
-          entityEl.setAttribute("visible", es_visible);
-          sceneEl.appendChild(entityEl);
-        }}
-      >
-        ok2
-      </button>
-*/

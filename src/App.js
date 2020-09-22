@@ -1,10 +1,10 @@
 import React, { Component } from "react";
-import TravisClient from "./TravisClient";
+import Start from "./Start";
 class App extends Component {
   render() {
     return (
       <div className="App">
-        <TravisClient />
+        <Start />
       </div>
     );
   }
