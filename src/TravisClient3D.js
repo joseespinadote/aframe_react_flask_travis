@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, Fragment } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setToken,
@@ -27,44 +27,120 @@ function TravisClient3D() {
   const job = useSelector(selectJob);
   const jobLog = useSelector(selectJobLog);
   const dispatch = useDispatch();
+  var posBuildx = 3;
+  var posBuildy = 0.7;
+  var posBuildz = 1;
+  if (!AFRAME.components["cursor-build-listener"]) {
+    AFRAME.registerComponent("cursor-build-listener", {
+      init: function () {
+        this.el.addEventListener("click", (e) => {
+          dispatch(getBuildsAsync(token, this.el.getAttribute("build_id")));
+        });
+        this.el.addEventListener("mouseenter", (e) => {
+          this.el.setAttribute("scale", "1.3 1.3 1");
+        });
+        this.el.addEventListener("mouseleave", (e) => {
+          this.el.setAttribute("scale", "1 1 1");
+        });
+      },
+    });
+  }
+  useEffect(() => {
+    let inputTravisToken = document.querySelector("#inTravisToken");
+    let btnOkToken = document.querySelector("#btnOkToken");
+    let keyboard = document.querySelector("#keyboard");
 
-  var source = new EventSource("/stream");
+    keyboard.addEventListener("didopen", (e) => {
+      keyboard.setAttribute("position", "-0.5 1 -2");
+      inputTravisToken.value = token;
+    });
+    btnOkToken.addEventListener("click", () => {
+      dispatch(setUserAsync(token));
+      dispatch(getReposAsync(token));
+    });
+  });
+
+  /*var source = new EventSource("/stream");
   source.onmessage = function (event) {
     console.log(event.data);
-  };
+  };*/
+
   return (
     <div>
-      <div>
-        <a-scene>
-          <a-entity camera look-controls wasd-controls position="0 2 0">
-            <a-cursor></a-cursor>
-          </a-entity>
-          <a-entity environment></a-entity>
-        </a-scene>
-      </div>
-      <button
-        onClick={(e) => {
-          var sceneEl = document.querySelector("a-scene");
-          let posicion_incial = " 1 1 -1.5";
-          let str_geometria = "primitive: plane; width: 3; height: 0.75";
-          let str_alineacion_texto = "center";
-          let str_color = "color: green";
-          let text = "holaaa";
-          let es_visible = true;
-          let entityEl = document.createElement("a-text");
-          entityEl.setAttribute("geometry", str_geometria);
-          entityEl.setAttribute("material", str_color);
-          entityEl.setAttribute("value", text);
-          entityEl.setAttribute("align", str_alineacion_texto);
-          entityEl.setAttribute("anchor", "center");
-          entityEl.setAttribute("baseline", "center");
-          entityEl.setAttribute("position", posicion_incial);
-          entityEl.setAttribute("visible", es_visible);
-          sceneEl.appendChild(entityEl);
-        }}
-      >
-        ok2
-      </button>
+      <a-scene>
+        <a-entity environment="preset: forest"></a-entity>
+        <a-entity laser-controls="hand: right"></a-entity>
+        <a-camera
+          look-controls-enabled
+          wasd-controls-enabled
+          mouse-cursor
+        ></a-camera>
+        <a-keyboard id="keyboard"></a-keyboard>
+        <a-input
+          id="inTravisToken"
+          position="0 2 -2"
+          placeholder="travis token here!"
+          color="black"
+          width="1"
+          type="text"
+          name="token"
+          value=""
+        ></a-input>
+        <a-button id="btnOkToken" position="1 2 -2" value="Ok"></a-button>
+        {user && (
+          <Fragment>
+            <a-entity
+              position="1 2.5 -2"
+              rotation="10 0 0"
+              geometry="primitive: plane; width: auto; height: auto"
+              material="color: #000080; opacity: 0.2"
+              text={
+                "color: #FFFF00; align: left; value: user: " +
+                user.name +
+                "\nmail: " +
+                user.email +
+                "\nlogin: " +
+                user.login +
+                "; width: 2.5;wrap-count: 30"
+              }
+            ></a-entity>
+            <a-image
+              position="-1 2.5 -2"
+              rotation="10 10 0"
+              src={user.avatar_url}
+            ></a-image>
+          </Fragment>
+        )}
+        {repos &&
+          repos.repositories.map((item) => {
+            posBuildy += 0.3;
+            if (posBuildy > 2) {
+              posBuildy = 1;
+              posBuildz += 2;
+            }
+            return (
+              <Fragment key={item.id}>
+                <a-entity
+                  cursor-build-listener
+                  build_id={item.id}
+                  position={posBuildx + " " + posBuildy + " " + posBuildz}
+                  rotation="0 -90 0"
+                  geometry="primitive: plane; width: auto; height: auto"
+                  material="color: #000080; opacity: 0.2"
+                  text={
+                    "color: #FFFF00; align: left; value: name: " +
+                    item.name +
+                    "\nslug: " +
+                    item.slug +
+                    "\ndescription: " +
+                    item.description +
+                    "; width: 1.8;wrap-count: 60"
+                  }
+                ></a-entity>
+              </Fragment>
+            );
+          })}
+      </a-scene>
     </div>
   );
 }

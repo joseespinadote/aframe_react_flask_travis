@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, Response
+from flask import Flask, render_template, request, Response, send_from_directory
 import json
 import datetime
 import requests
@@ -16,6 +16,14 @@ def event_stream():
 @app.route('/stream')
 def stream():
     return Response(event_stream(), mimetype="text/event-stream")
+
+@app.route('/assets/images/<path:filename>')
+def assets_images_static(filename):
+    return send_from_directory(app.root_path + '/assets/images/', filename)
+
+@app.route('/assets/sounds/<path:filename>')
+def assets_sounds_static(filename):
+    return send_from_directory(app.root_path + '/assets/sounds/', filename)
 
 @app.route('/')
 def hello_world():

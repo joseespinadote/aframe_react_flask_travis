@@ -83,6 +83,7 @@ function TravisClient() {
                 <th>name</th>
                 <th>slug</th>
                 <th>description</th>
+                <th>active</th>
                 <th></th>
               </tr>
             </thead>
@@ -93,6 +94,7 @@ function TravisClient() {
                     <td>{item.name}</td>
                     <td>{item.slug}</td>
                     <td>{item.description}</td>
+                    <td>{item.active ? "active" : ""}</td>
                     <td>
                       <button
                         onClick={(e) => {
