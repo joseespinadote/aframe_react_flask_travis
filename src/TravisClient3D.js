@@ -37,7 +37,7 @@ function TravisClient3D() {
     AFRAME.registerComponent("cursor-repo-listener", {
       init: function () {
         this.el.addEventListener("click", (e) => {
-          dispatch(getBuildsAsync(token, this.el.getAttribute("build_id")));
+          dispatch(getBuildsAsync(token, this.el.getAttribute("repo_id")));
         });
         this.el.addEventListener("mouseenter", (e) => {
           this.el.setAttribute("scale", "1.3 1.3 1");
@@ -51,7 +51,9 @@ function TravisClient3D() {
   if (!AFRAME.components["cursor-build-listener"]) {
     AFRAME.registerComponent("cursor-build-listener", {
       init: function () {
-        this.el.addEventListener("click", (e) => {});
+        this.el.addEventListener("click", (e) => {
+          dispatch(getBuildJobsAsync(token, this.el.getAttribute("build_id")));
+        });
         this.el.addEventListener("mouseenter", (e) => {
           this.el.setAttribute("scale", "1.3 1.3 1");
         });
@@ -83,7 +85,62 @@ function TravisClient3D() {
 
   return (
     <div>
+      <div
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "fixed",
+          left: 0,
+          top: 0,
+          zIndex: -1,
+          overflow: "hidden",
+        }}
+      >
+        {buildJobs && (
+          <div
+            id="htmlElement"
+            style={{
+              background: "#F8F8F8",
+              color: "#333",
+              fontSize: "50px",
+            }}
+          >
+            <table>
+              <thead>
+                <tr>
+                  <th>os</th>
+                  <th>compiler</th>
+                  <th>languaje</th>
+                  <th>dist</th>
+                  <th>env</th>
+                </tr>
+              </thead>
+              <tbody>
+                {buildJobs.jobs.map((item) => {
+                  return (
+                    <tr>
+                      <td>{item.config.os}</td>
+                      <td>{item.config.compiler}</td>
+                      <td>{item.config.language}</td>
+                      <td>{item.config.dist}</td>
+                      <td>{item.config.env}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
       <a-scene>
+        {buildJobs && (
+          <a-entity
+            geometry="primitive: plane ;height:3; width:3.8"
+            material="shader: html; target: #htmlElement"
+            position="0 2 7"
+            rotation="0 180 0"
+          ></a-entity>
+        )}
         <a-entity environment="preset: forest"></a-entity>
         <a-entity laser-controls="hand: right"></a-entity>
         <a-camera
@@ -138,7 +195,7 @@ function TravisClient3D() {
               <Fragment key={item.id}>
                 <a-entity
                   cursor-repo-listener
-                  build_id={item.id}
+                  repo_id={item.id}
                   position={posRepox + " " + posRepoy + " " + posRepoz}
                   rotation="0 -90 0"
                   geometry="primitive: plane; width: auto; height: auto"
@@ -179,7 +236,7 @@ function TravisClient3D() {
                     item.state +
                     "\nduration: " +
                     item.event_type +
-                    "\nbranch name" +
+                    "\nbranch name: " +
                     item.branch.name +
                     "; width: 1.8;wrap-count: 60"
                   }
