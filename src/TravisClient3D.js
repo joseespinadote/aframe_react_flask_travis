@@ -27,15 +27,31 @@ function TravisClient3D() {
   const job = useSelector(selectJob);
   const jobLog = useSelector(selectJobLog);
   const dispatch = useDispatch();
-  var posBuildx = 3;
+  var posRepox = 3;
+  var posRepoy = 0.7;
+  var posRepoz = 1;
+  var posBuildx = -3;
   var posBuildy = 0.7;
   var posBuildz = 1;
-  if (!AFRAME.components["cursor-build-listener"]) {
-    AFRAME.registerComponent("cursor-build-listener", {
+  if (!AFRAME.components["cursor-repo-listener"]) {
+    AFRAME.registerComponent("cursor-repo-listener", {
       init: function () {
         this.el.addEventListener("click", (e) => {
           dispatch(getBuildsAsync(token, this.el.getAttribute("build_id")));
         });
+        this.el.addEventListener("mouseenter", (e) => {
+          this.el.setAttribute("scale", "1.3 1.3 1");
+        });
+        this.el.addEventListener("mouseleave", (e) => {
+          this.el.setAttribute("scale", "1 1 1");
+        });
+      },
+    });
+  }
+  if (!AFRAME.components["cursor-build-listener"]) {
+    AFRAME.registerComponent("cursor-build-listener", {
+      init: function () {
+        this.el.addEventListener("click", (e) => {});
         this.el.addEventListener("mouseenter", (e) => {
           this.el.setAttribute("scale", "1.3 1.3 1");
         });
@@ -113,6 +129,35 @@ function TravisClient3D() {
         )}
         {repos &&
           repos.repositories.map((item) => {
+            posRepoy += 0.3;
+            if (posRepoy > 2) {
+              posRepoy = 1;
+              posRepoz += 2;
+            }
+            return (
+              <Fragment key={item.id}>
+                <a-entity
+                  cursor-repo-listener
+                  build_id={item.id}
+                  position={posRepox + " " + posRepoy + " " + posRepoz}
+                  rotation="0 -90 0"
+                  geometry="primitive: plane; width: auto; height: auto"
+                  material="color: #000080; opacity: 0.2"
+                  text={
+                    "color: #FFFF00; align: left; value: name: " +
+                    item.name +
+                    "\nslug: " +
+                    item.slug +
+                    "\ndescription: " +
+                    item.description +
+                    "; width: 1.8;wrap-count: 60"
+                  }
+                ></a-entity>
+              </Fragment>
+            );
+          })}
+        {builds &&
+          builds.builds.map((item) => {
             posBuildy += 0.3;
             if (posBuildy > 2) {
               posBuildy = 1;
@@ -124,16 +169,18 @@ function TravisClient3D() {
                   cursor-build-listener
                   build_id={item.id}
                   position={posBuildx + " " + posBuildy + " " + posBuildz}
-                  rotation="0 -90 0"
+                  rotation="0 90 0"
                   geometry="primitive: plane; width: auto; height: auto"
                   material="color: #000080; opacity: 0.2"
                   text={
-                    "color: #FFFF00; align: left; value: name: " +
-                    item.name +
-                    "\nslug: " +
-                    item.slug +
-                    "\ndescription: " +
-                    item.description +
+                    "color: #FFFF00; align: left; value: number: " +
+                    item.number +
+                    "\nstate: " +
+                    item.state +
+                    "\nduration: " +
+                    item.event_type +
+                    "\nbranch name" +
+                    item.branch.name +
                     "; width: 1.8;wrap-count: 60"
                   }
                 ></a-entity>
