@@ -11,6 +11,7 @@ export const userSlice = createSlice({
     buildJobs: null,
     job: null,
     jobLog: null,
+    repoTree: null,
   },
   reducers: {
     setToken: (state, action) => {
@@ -34,6 +35,9 @@ export const userSlice = createSlice({
     getJobLog: (state, action) => {
       state.jobLog = action.payload;
     },
+    getRepoTree: (state, action) => {
+      state.repoTree = action.payload;
+    },
   },
 });
 
@@ -45,6 +49,7 @@ const {
   getBuildJobs,
   getJob,
   getJobLog,
+  getRepoTree,
 } = userSlice.actions;
 
 export const setUserAsync = (token) => (dispatch) => {
@@ -76,7 +81,21 @@ export const getReposAsync = (token) => (dispatch) => {
       console.log(err);
     });
 };
-
+export const getExternalReposAsync = (token, externalProject) => (dispatch) => {
+  axios
+    .get("/extRepos", {
+      params: {
+        token: token,
+        provider_login: externalProject,
+      },
+    })
+    .then((res) => {
+      dispatch(getRepos(res.data));
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
 export const getBuildsAsync = (token, repo_id) => (dispatch) => {
   axios
     .get("/builds", {
@@ -157,6 +176,22 @@ export const getJobLogAsync = (token, job_id) => (dispatch) => {
     });
 };
 
+export const getRepoTreeAsync = (token, repo_id) => (dispatch) => {
+  axios
+    .get("/repoTree", {
+      params: {
+        token: token,
+        repo_id: repo_id,
+      },
+    })
+    .then((res) => {
+      dispatch(getRepoTree(res.data));
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
+
 export const selectToken = (state) => state.user.token;
 export const selectUser = (state) => state.user.user;
 export const selectRepos = (state) => state.user.repos;
@@ -164,5 +199,6 @@ export const selectBuilds = (state) => state.user.builds;
 export const selectBuildJobs = (state) => state.user.buildJobs;
 export const selectJob = (state) => state.user.job;
 export const selectJobLog = (state) => state.user.jobLog;
+export const selectRepoTree = (state) => state.user.repoTree;
 
 export default userSlice.reducer;

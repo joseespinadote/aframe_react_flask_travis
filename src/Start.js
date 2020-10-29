@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import TravisClient from "./TravisClient";
-import TravisClient3D from "./TravisClient3D";
+//import TravisClientAR from "./TravisClientAR";
+import TravisClientVR from "./TravisClientVR";
 
 function Start() {
   const [opcion, setOpcion] = useState("");
@@ -8,20 +9,27 @@ function Start() {
     <div>
       <button
         onClick={(e) => {
-          setOpcion("2d");
+          setOpcion("txt");
         }}
       >
-        2d
+        text
       </button>
       <button
         onClick={(e) => {
-          setOpcion("3d");
+          setOpcion("VR");
         }}
       >
-        3d
+        VR
       </button>
-      {opcion == "2d" && <TravisClient />}
-      {opcion == "3d" && <TravisClient3D />}
+      <button
+        onClick={(e) => {
+          setOpcion("AR");
+        }}
+      >
+        AR
+      </button>
+      {opcion == "txt" && <TravisClient />}
+      {opcion == "VR" && <TravisClientVR />}
     </div>
   );
 }

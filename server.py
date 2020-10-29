@@ -45,6 +45,15 @@ def travis_wrapper_repos():
     r = requests.get(url, headers=headers)
     return r.text
 
+@app.route('/extRepos')
+def travis_wrapper_ext_repos():
+    provider_login = request.args.get('provider_login')
+    url = 'https://api.travis-ci.org/owner/'+provider_login+'/repos'
+    token = request.args.get('token')
+    headers = {'Travis-API-Version': '3', 'User-Agent': 'API Explorer', 'Authorization' : 'token ' + token}
+    r = requests.get(url, headers=headers)
+    return r.text
+
 @app.route('/builds')
 def travis_wrapper_builds():
     repo_id = request.args.get('repo_id')
@@ -85,6 +94,16 @@ def travis_wrapper_job():
 def travis_wrapper_jobLog():
     job_id = request.args.get('job_id')
     url = 'https://api.travis-ci.org/job/'+job_id+'/log'
+    token = request.args.get('token')
+    headers = {'Travis-API-Version': '3', 'User-Agent': 'API Explorer', 'Authorization' : 'token ' + token}
+    r = requests.get(url, headers=headers)
+    return r.text
+
+@app.route('/repoTree')
+def travis_wrapper_repoTree():
+    token = request.args.get('token')
+    repo_id = request.args.get('repo_id')
+    url = 'https://api.travis-ci.org/repo/'+repo_id+'/builds?include=job.config'
     token = request.args.get('token')
     headers = {'Travis-API-Version': '3', 'User-Agent': 'API Explorer', 'Authorization' : 'token ' + token}
     r = requests.get(url, headers=headers)
