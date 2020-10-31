@@ -155,14 +155,6 @@ function TravisClient() {
                             >
                               load builds
                             </button>
-                            <span>&nbsp;&nbsp;</span>
-                            <button
-                              onClick={(e) => {
-                                dispatch(getRepoTreeAsync(token, item.id));
-                              }}
-                            >
-                              get repo tree
-                            </button>
                           </div>
                         )}
                       </td>
