@@ -8,7 +8,6 @@ import {
   getBuildsAsync,
   getBuildJobsAsync,
   getJobLogAsync,
-  getRepoTreeAsync,
   selectToken,
   selectUser,
   selectRepos,
@@ -183,6 +182,7 @@ function TravisClient() {
                 <th>duration</th>
                 <th>event_type</th>
                 <th>branch</th>
+                <th>stages</th>
                 <th>commit</th>
                 <th>started_at</th>
                 <th>finished_at</th>
@@ -199,6 +199,7 @@ function TravisClient() {
                       <td>{item.duration}</td>
                       <td>{item.event_type}</td>
                       <td>{item.branch.name}</td>
+                      <td>{JSON.stringify(item.stages, null, 2)}</td>
                       <td>
                         {item.commit && (
                           <a href={item.commit.compare_url} target="_blank">

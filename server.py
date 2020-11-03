@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, Response, send_from_directory
 import json
 import datetime
 import requests
+import re
 
 app = Flask(__name__, template_folder='./public', static_url_path='/dist', static_folder='./dist')
 
@@ -39,7 +40,7 @@ def travis_wrapper_user():
 
 @app.route('/repos')
 def travis_wrapper_repos():
-    url = 'https://api.travis-ci.org/repos'
+    url = 'https://api.travis-ci.org/repos?repository.active=true&limit=200'
     token = request.args.get('token')
     headers = {'Travis-API-Version': '3', 'User-Agent': 'API Explorer', 'Authorization' : 'token ' + token}
     r = requests.get(url, headers=headers)
@@ -48,7 +49,17 @@ def travis_wrapper_repos():
 @app.route('/extRepos')
 def travis_wrapper_ext_repos():
     provider_login = request.args.get('provider_login')
-    url = 'https://api.travis-ci.org/owner/'+provider_login+'/repos'
+    url = 'https://api.travis-ci.org/owner/'+provider_login+'/repos?repository.active=true&limit=200'
+    token = request.args.get('token')
+    headers = {'Travis-API-Version': '3', 'User-Agent': 'API Explorer', 'Authorization' : 'token ' + token}
+    r = requests.get(url, headers=headers)
+    return r.text
+
+@app.route('/repoTree')
+def travis_wrapper_repoTree():
+    token = request.args.get('token')
+    repo_id = request.args.get('repo_id')
+    url = 'https://api.travis-ci.org/repo/'+repo_id+'/builds?include=job.config&limit=12'
     token = request.args.get('token')
     headers = {'Travis-API-Version': '3', 'User-Agent': 'API Explorer', 'Authorization' : 'token ' + token}
     r = requests.get(url, headers=headers)
@@ -57,7 +68,7 @@ def travis_wrapper_ext_repos():
 @app.route('/builds')
 def travis_wrapper_builds():
     repo_id = request.args.get('repo_id')
-    url = 'https://api.travis-ci.org/repo/'+repo_id+'/builds'
+    url = 'https://api.travis-ci.org/repo/'+repo_id+'/builds&limit=15'
     token = request.args.get('token')
     headers = {'Travis-API-Version': '3', 'User-Agent': 'API Explorer', 'Authorization' : 'token ' + token}
     r = requests.get(url, headers=headers)
@@ -97,17 +108,19 @@ def travis_wrapper_jobLog():
     token = request.args.get('token')
     headers = {'Travis-API-Version': '3', 'User-Agent': 'API Explorer', 'Authorization' : 'token ' + token}
     r = requests.get(url, headers=headers)
-    return r.text
-
-@app.route('/repoTree')
-def travis_wrapper_repoTree():
-    token = request.args.get('token')
-    repo_id = request.args.get('repo_id')
-    url = 'https://api.travis-ci.org/repo/'+repo_id+'/builds?include=job.config'
-    token = request.args.get('token')
-    headers = {'Travis-API-Version': '3', 'User-Agent': 'API Explorer', 'Authorization' : 'token ' + token}
-    r = requests.get(url, headers=headers)
-    return r.text
+    contents = r.json()['content'].strip()
+    contents = re.sub(r"\s+", " ", contents)
+    errorIndexes = [m.start() for m in re.finditer(' [Ee]rror ', contents)]
+    offset = 150
+    rightOffset=-1
+    arrError = []
+    for i in errorIndexes :
+        if i <= rightOffset:
+            continue
+        rightOffset = i + offset
+        leftOffset = i - offset if i >= offset else i
+        arrError.append("..." + contents[leftOffset:rightOffset] + "...")
+    return {"errores": arrError}
 
 @app.route('/webhook', methods=['POST'])
 def respond():
