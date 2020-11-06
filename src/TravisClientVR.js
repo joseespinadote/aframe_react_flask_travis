@@ -7,8 +7,35 @@ import {
   selectRepos,
   selectRepoTree,
   selectJobLog,
+  clearAll,
 } from "./userSlice";
 
+function errorsGenerator(aScene, errores) {
+  var els = aScene.querySelectorAll(".log");
+  for (var i = els.length - 1; i >= 0; i--) {
+    let element = els[i];
+    element.parentNode.removeChild(element);
+  }
+  let counter = 0.3;
+  errores.map((item, index) => {
+    let entityText = document.createElement("a-entity");
+    let currentText = item;
+    entityText.setAttribute(
+      "text",
+      "align:center;width:1.2;value:" + currentText
+    );
+    entityText.setAttribute("position", "2 " + counter.toString() + " 0");
+    counter += 0.51;
+    entityText.setAttribute(
+      "geometry",
+      "primitive: plane; height: 0.5; width: 1.2"
+    );
+    entityText.setAttribute("material", "color: red");
+    entityText.setAttribute("rotation", "0 -70 0");
+    entityText.setAttribute("class", "log");
+    aScene.appendChild(entityText);
+  });
+}
 function repoOptionsGenerator(aScene, repos) {
   let zOffset = -2;
   let position = { x: 0, y: 0, z: 0 };
@@ -47,11 +74,6 @@ function buildOptionsGenerator(aScene, repoTree) {
 
   repoTree.builds &&
     repoTree.builds.map((item, index) => {
-      /*id;
-    state;
-    branch.name;
-    commit.message;
-    created_by.login;*/
       let texto1 = item.state;
       let texto2 = item.started_at;
       elementGenerator(
@@ -66,8 +88,8 @@ function buildOptionsGenerator(aScene, repoTree) {
       position.y += 0.21;
     });
   if (repoTree.builds) {
-    if (!AFRAME.components["cursor-listener2"]) {
-      AFRAME.registerComponent("cursor-listener2", {
+    if (!AFRAME.components["cursor-pin"]) {
+      AFRAME.registerComponent("cursor-pin", {
         init: function () {
           this.el.addEventListener("click", (e) => {
             let id_artefacto = this.el.getAttribute("id_artefacto");
@@ -81,25 +103,51 @@ function buildOptionsGenerator(aScene, repoTree) {
                   let counter = 1;
                   obj.jobs.map((item) => {
                     let entityText = document.createElement("a-entity");
+                    let distro = item.config.dist
+                      ? item.config.dist
+                      : "No distro";
+                    let lang = item.config.language
+                      ? item.config.language
+                      : "No lang";
+                    let currentText = distro + ", " + lang;
                     entityText.setAttribute(
                       "text",
-                      "align:left;width:1;value:" + JSON.stringify(item.config)
+                      "align:center;width:1.5;value:" + currentText
                     );
                     entityText.setAttribute(
                       "position",
-                      "1 " + counter.toString() + " -1"
+                      "0.7 " + counter.toString() + " -1"
                     );
                     counter += 0.21;
                     entityText.setAttribute(
                       "geometry",
-                      "primitive: plane; height: 0.2; width: 1"
+                      "primitive: plane; height: 0.15; width: 0.5"
                     );
-                    entityText.setAttribute("material", "color: blue");
+                    let color = item.state == "passed" ? "blue" : "red";
+                    entityText.setAttribute("material", "color: " + color);
                     entityText.setAttribute("rotation", "0 -20 0");
                     entityText.setAttribute("class", "buildMatrix");
                     entityText.setAttribute("id_job", item.id);
                     entityText.setAttribute("id_artefacto", "panelJob");
                     entityText.setAttribute("cursor-listener", false);
+                    let entityPet = document.createElement("a-gltf-model");
+                    entityPet.setAttribute(
+                      "src",
+                      item.config.os == "linux" ? "#tux" : "#osx"
+                    );
+                    entityPet.setAttribute(
+                      "scale",
+                      item.config.os == "linux"
+                        ? "0.002 0.002 0.002"
+                        : "0.005 0.005 0.005"
+                    );
+                    let positionY = counter - 0.3;
+                    entityPet.setAttribute(
+                      "position",
+                      "0.4 " + positionY.toString() + " -1.1"
+                    );
+                    entityPet.setAttribute("class", "buildMatrix");
+                    aScene.appendChild(entityPet);
                     aScene.appendChild(entityText);
                   });
                 }
@@ -119,6 +167,11 @@ function buildOptionsGenerator(aScene, repoTree) {
                 let element = els[i];
                 element.setAttribute("rotation", "0 0 90");
                 element.removeAttribute("animation");
+              }
+              els = aScene.querySelectorAll(".log");
+              for (var i = els.length - 1; i >= 0; i--) {
+                let element = els[i];
+                element.parentNode.removeChild(element);
               }
               this.el.setAttribute(
                 "animation",
@@ -187,7 +240,7 @@ function elementGenerator(
     entityPin.setAttribute("id_artefacto", "pin");
     entityPin.setAttribute("id_build", item_id);
     entityPin.setAttribute("class", "pin");
-    entityPin.setAttribute("cursor-listener2", false);
+    entityPin.setAttribute("cursor-pin", false);
     entityBox.appendChild(entityTitle);
     entityBox.appendChild(entityPin);
     entityBox.appendChild(entityDate);
@@ -203,11 +256,10 @@ function TravisClientVR() {
   const repoTree = useSelector(selectRepoTree);
   const dispatch = useDispatch();
 
-  jobLog && alert(JSON.stringify(jobLog));
-
   useEffect(() => {
     const aScene = document.querySelector("a-scene");
     repoTree && buildOptionsGenerator(aScene, repoTree);
+    jobLog && errorsGenerator(aScene, jobLog.errores);
     if (!reposRendered) {
       repos && repoOptionsGenerator(aScene, repos);
       setReposRendered(true);
@@ -222,6 +274,24 @@ function TravisClientVR() {
               } else if (id_artefacto == "panelJob") {
                 let id_job = this.el.getAttribute("id_job");
                 dispatch(getJobLogAsync(token, id_job));
+              } else if (id_artefacto == "btn-reset") {
+                dispatch(clearAll());
+                delete AFRAME.components["cursor-pin"];
+                let els = aScene.querySelectorAll(".opcionBuild");
+                for (var i = els.length - 1; i >= 0; i--) {
+                  let element = els[i];
+                  element.parentNode.removeChild(element);
+                }
+                els = aScene.querySelectorAll(".buildMatrix");
+                for (var i = els.length - 1; i >= 0; i--) {
+                  let element = els[i];
+                  element.parentNode.removeChild(element);
+                }
+                els = aScene.querySelectorAll(".log");
+                for (var i = els.length - 1; i >= 0; i--) {
+                  let element = els[i];
+                  element.parentNode.removeChild(element);
+                }
               }
             });
             this.el.addEventListener("mouseenter", (e) => {
@@ -231,26 +301,6 @@ function TravisClientVR() {
                   "animation",
                   "property: material.color; from: #000; to: #FFF; dur: 500; autoplay: true"
                 );
-              } else if (id_artefacto == "pin") {
-                /*
-                if (repoTree) {
-                  let id_build = this.el.getAttribute("id_build");
-                  let obj = repoTree.builds.find((item) => {
-                    return item.id === id_build;
-                  });
-                  console.log(obj);
-                }
-                let els = aScene.querySelectorAll(".pin");
-                for (var i = 0; i < els.length; i++) {
-                  let element = els[i];
-                  element.setAttribute("rotation", "0 0 90");
-                  element.removeAttribute("animation");
-                }
-                this.el.setAttribute(
-                  "animation",
-                  "property: rotation; from: 0 0 90; to: 0 0 45; dur: 500; autoplay: true"
-                );
-                */
               }
             });
             this.el.addEventListener("mouseleave", (e) => {
@@ -258,13 +308,10 @@ function TravisClientVR() {
               if (id_artefacto == "opcionRepo") {
                 this.el.removeAttribute("animation");
                 this.el.setAttribute("material", "color: #000");
-              } else if (id_artefacto == "pin") {
               }
             });
             this.el.addEventListener("fusing", (e) => {
               let id_artefacto = this.el.getAttribute("id_artefacto");
-              if (id_artefacto == "opcionRepo") {
-              }
             });
           },
         });
@@ -276,8 +323,10 @@ function TravisClientVR() {
   return (
     <a-scene>
       <a-assets>
-        <img id="pin" src="/dist/pin-icon.png" />
-        <img id="piso" src="/dist/piso.jpg" />
+        <img id="pin" src="/dist/imgs/pin-icon.png" />
+        <img id="piso" src="/dist/imgs/piso.jpg" />
+        <a-asset-item id="tux" src="/dist/tux/scene.gltf"></a-asset-item>
+        <a-asset-item id="osx" src="/dist/osx/scene.gltf"></a-asset-item>
       </a-assets>
       <a-camera>
         <a-entity
@@ -294,26 +343,19 @@ function TravisClientVR() {
         height="50"
         repeat="10 10"
         src="#piso"
-      ></a-plane>
+      >
+        <a-entity
+          cursor-listener
+          text="align: center; value:RESET; color:#FFF; width: 3;"
+          id_artefacto="btn-reset"
+          geometry="primitive: plane; width: 0.9; height: 0.3"
+          material="color: blue"
+          position="0 -3 0.1"
+        ></a-entity>
+      </a-plane>
       <a-sky color="#ECECEC"></a-sky>
     </a-scene>
   );
 }
 
 export default TravisClientVR;
-/*
-<a-assets>
-        <a-asset-item
-          id="plant-obj"
-          src="/dist/plant/Low-Poly Plant_.obj"
-        ></a-asset-item>
-        <a-asset-item
-          id="plant-mtl"
-          src="/dist/plant/Low-Poly Plant_.mtl"
-        ></a-asset-item>
-      </a-assets>
-<a-entity
-  position="-2 0 0"
-  obj-model="obj: #plant-obj; mtl: #plant-mtl"
-></a-entity>
-*/

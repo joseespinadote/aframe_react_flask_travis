@@ -38,10 +38,17 @@ export const userSlice = createSlice({
     getRepoTree: (state, action) => {
       state.repoTree = action.payload;
     },
+    clearAll: (state, action) => {
+      state.builds = null;
+      state.buildJobs = null;
+      state.job = null;
+      state.jobLog = null;
+      state.repoTree = null;
+    },
   },
 });
 
-export const { setToken } = userSlice.actions;
+export const { setToken, clearAll } = userSlice.actions;
 const {
   setUser,
   getRepos,

@@ -15,6 +15,7 @@ import {
   selectBuildJobs,
   selectJobLog,
   selectRepoTree,
+  clearAll,
 } from "./userSlice";
 import "./TravisClient.css";
 
@@ -124,6 +125,13 @@ function TravisClient() {
       )}
       {repos && (
         <div>
+          <button
+            onClick={(e) => {
+              dispatch(clearAll());
+            }}
+          >
+            clear all
+          </button>
           <h4>repos</h4>
           <table>
             <thead>
