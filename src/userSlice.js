@@ -4,6 +4,7 @@ import axios from "axios";
 export const userSlice = createSlice({
   name: "user",
   initialState: {
+    loading: false,
     token: "EDA3W8-FZmyIpOO0PutuCQ",
     user: null,
     repos: null,
@@ -14,6 +15,9 @@ export const userSlice = createSlice({
     repoTree: null,
   },
   reducers: {
+    setLoading: (state, action) => {
+      state.loading = action.payload;
+    },
     setToken: (state, action) => {
       state.token = action.payload;
     },
@@ -39,6 +43,7 @@ export const userSlice = createSlice({
       state.repoTree = action.payload;
     },
     clearAll: (state, action) => {
+      state.loading = false;
       state.builds = null;
       state.buildJobs = null;
       state.job = null;
@@ -50,6 +55,7 @@ export const userSlice = createSlice({
 
 export const { setToken, clearAll } = userSlice.actions;
 const {
+  setLoading,
   setUser,
   getRepos,
   getBuilds,
@@ -60,6 +66,7 @@ const {
 } = userSlice.actions;
 
 export const setUserAsync = (token) => (dispatch) => {
+  dispatch(setLoading(true));
   axios
     .get("/user", {
       params: {
@@ -71,10 +78,12 @@ export const setUserAsync = (token) => (dispatch) => {
     })
     .catch((err) => {
       console.log(err);
-    });
+    })
+    .finally(() => dispatch(setLoading(false)));
 };
 
 export const getReposAsync = (token) => (dispatch) => {
+  dispatch(setLoading(true));
   axios
     .get("/repos", {
       params: {
@@ -86,9 +95,11 @@ export const getReposAsync = (token) => (dispatch) => {
     })
     .catch((err) => {
       console.log(err);
-    });
+    })
+    .finally(() => dispatch(setLoading(false)));
 };
 export const getExternalReposAsync = (token, externalProject) => (dispatch) => {
+  dispatch(setLoading(true));
   axios
     .get("/extRepos", {
       params: {
@@ -101,9 +112,11 @@ export const getExternalReposAsync = (token, externalProject) => (dispatch) => {
     })
     .catch((err) => {
       console.log(err);
-    });
+    })
+    .finally(() => dispatch(setLoading(false)));
 };
 export const getBuildsAsync = (token, repo_id) => (dispatch) => {
+  dispatch(setLoading(true));
   axios
     .get("/builds", {
       params: {
@@ -116,10 +129,12 @@ export const getBuildsAsync = (token, repo_id) => (dispatch) => {
     })
     .catch((err) => {
       console.log(err);
-    });
+    })
+    .finally(() => dispatch(setLoading(false)));
 };
 
 export const getLogAsync = (token, build_id) => (dispatch) => {
+  dispatch(setLoading(true));
   axios
     .get("/build_log", {
       params: {
@@ -132,10 +147,12 @@ export const getLogAsync = (token, build_id) => (dispatch) => {
     })
     .catch((err) => {
       console.log(err);
-    });
+    })
+    .finally(() => dispatch(setLoading(false)));
 };
 
 export const getBuildJobsAsync = (token, build_id) => (dispatch) => {
+  dispatch(setLoading(true));
   axios
     .get("/buildJobs", {
       params: {
@@ -148,10 +165,12 @@ export const getBuildJobsAsync = (token, build_id) => (dispatch) => {
     })
     .catch((err) => {
       console.log(err);
-    });
+    })
+    .finally(() => dispatch(setLoading(false)));
 };
 
 export const getJobAsync = (token, job_id) => (dispatch) => {
+  dispatch(setLoading(true));
   axios
     .get("/job", {
       params: {
@@ -164,10 +183,12 @@ export const getJobAsync = (token, job_id) => (dispatch) => {
     })
     .catch((err) => {
       console.log(err);
-    });
+    })
+    .finally(() => dispatch(setLoading(false)));
 };
 
 export const getJobLogAsync = (token, job_id) => (dispatch) => {
+  dispatch(setLoading(true));
   axios
     .get("/jobLog", {
       params: {
@@ -180,10 +201,12 @@ export const getJobLogAsync = (token, job_id) => (dispatch) => {
     })
     .catch((err) => {
       console.log(err);
-    });
+    })
+    .finally(() => dispatch(setLoading(false)));
 };
 
 export const getRepoTreeAsync = (token, repo_id) => (dispatch) => {
+  dispatch(setLoading(true));
   axios
     .get("/repoTree", {
       params: {
@@ -196,9 +219,11 @@ export const getRepoTreeAsync = (token, repo_id) => (dispatch) => {
     })
     .catch((err) => {
       console.log(err);
-    });
+    })
+    .finally(() => dispatch(setLoading(false)));
 };
 
+export const selectLoading = (state) => state.user.loading;
 export const selectToken = (state) => state.user.token;
 export const selectUser = (state) => state.user.user;
 export const selectRepos = (state) => state.user.repos;

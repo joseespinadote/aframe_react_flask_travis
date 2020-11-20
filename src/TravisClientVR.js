@@ -31,7 +31,7 @@ function errorsGenerator(aScene, errores) {
       "primitive: plane; height: 0.5; width: 1.2"
     );
     entityText.setAttribute("material", "color: red");
-    entityText.setAttribute("rotation", "0 -70 0");
+    entityText.setAttribute("rotation", "0 -80 0");
     entityText.setAttribute("class", "log");
     aScene.appendChild(entityText);
   });
