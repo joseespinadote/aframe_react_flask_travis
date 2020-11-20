@@ -5,7 +5,7 @@ export const userSlice = createSlice({
   name: "user",
   initialState: {
     loading: false,
-    token: "EDA3W8-FZmyIpOO0PutuCQ",
+    token: "",
     user: null,
     repos: null,
     builds: null,
@@ -42,8 +42,11 @@ export const userSlice = createSlice({
     getRepoTree: (state, action) => {
       state.repoTree = action.payload;
     },
-    clearAll: (state, action) => {
+    clearAll: (state) => {
       state.loading = false;
+      state.token = "";
+      state.user = null;
+      state.repos = null;
       state.builds = null;
       state.buildJobs = null;
       state.job = null;

@@ -20,14 +20,104 @@ import {
   clearAll,
 } from "./userSlice";
 
-function OwnRepo(props) {
+function TheirRepo(props) {
+  const [externalProject, setExternalProject] = useState("github/rails");
   const loading = useSelector(selectLoading);
+  const repos = useSelector(selectRepos);
   const token = useSelector(selectToken);
-  const user = useSelector(selectUser);
   const dispatch = useDispatch();
   return (
     <div className="column is-offset-1 is-10">
-      <p className="title is-2">Use vrengi with my repositories</p>
+      <p className="title is-2">Use vrengi with other people's repositories</p>
+      <div className="block">
+        You can try this prototipe with a user, and his/her provider, assuming
+        that he/she is currently using Travis (.org)
+        <br />
+        The format is "provider"/"username", for example: "github/rails"
+      </div>
+      <div className="field has-addons">
+        <div className={loading ? "control is-loading" : "control"}>
+          <input
+            size="24"
+            value={externalProject}
+            onChange={(e) => {
+              setExternalProject(e.target.value);
+            }}
+            className="input"
+            type="text"
+            placeholder="provider/user"
+          />
+        </div>
+        <div className="control">
+          <button
+            className="button is-link"
+            onClick={(e) => {
+              dispatch(getExternalReposAsync(token, externalProject));
+            }}
+          >
+            Get data
+          </button>
+        </div>
+      </div>
+      {repos && (
+        <div>
+          {repos.repositories ? (
+            <div>
+              {repos.repositories.filter((item) => item.active).length > 0 ? (
+                <div>
+                  <div className="block">
+                    Super! this user has{" "}
+                    {repos.repositories.filter((item) => item.active).length}{" "}
+                    repositories active on Travis (.org)
+                  </div>
+                  <button
+                    className="button is-primary"
+                    onClick={(e) => {
+                      props.setOpcion("VR");
+                    }}
+                  >
+                    So, let me in!
+                  </button>
+                </div>
+              ) : (
+                <div className="notification is-warning">
+                  The user has repositories, but no one them are activated in
+                  Travis (.org)
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="notification is-warning">
+              Invalid "provider/user"... sorry
+            </div>
+          )}
+        </div>
+      )}
+      <hr />
+      <button
+        className="button is-ghost"
+        onClick={(e) => {
+          dispatch(clearAll());
+          props.setOpcion("");
+        }}
+      >
+        Go back
+      </button>
+    </div>
+  );
+}
+
+function OwnRepo(props) {
+  const [currentToken, setCurrentToken] = useState("");
+  const loading = useSelector(selectLoading);
+  const token = useSelector(selectToken);
+  const user = useSelector(selectUser);
+  const repos = useSelector(selectRepos);
+  const dispatch = useDispatch();
+  if (repos) props.setOpcion("VR");
+  return (
+    <div className="column is-offset-1 is-10">
+      <p className="title is-2">Use vrengi with your own repositories</p>
       <div className="block">
         You can try this prototipe with your Travis (.org) API key.{" "}
         <a href="https://travis-ci.org/account/preferences" target="_blank">
@@ -38,9 +128,13 @@ function OwnRepo(props) {
         <div className={loading ? "control is-loading" : "control"}>
           <input
             size="24"
-            value={token ? token : ""}
+            value={currentToken}
             onChange={(e) => {
-              dispatch(setToken(e.target.value));
+              if (user) dispatch(clearAll());
+              setCurrentToken(e.target.value);
+            }}
+            onBlur={(e) => {
+              dispatch(setToken(currentToken));
             }}
             className="input"
             type="text"
@@ -89,10 +183,10 @@ function OwnRepo(props) {
               <button
                 className="button is-primary"
                 onClick={(e) => {
-                  alert("Under construction");
+                  dispatch(getReposAsync(token));
                 }}
               >
-                Yes sir! let me in
+                Yes! let me in
               </button>
             </div>
           ) : (
@@ -106,6 +200,7 @@ function OwnRepo(props) {
       <button
         className="button is-ghost"
         onClick={(e) => {
+          dispatch(clearAll());
           props.setOpcion("");
         }}
       >
@@ -116,6 +211,7 @@ function OwnRepo(props) {
 }
 
 function Landing(props) {
+  const dispatch = useDispatch();
   return (
     <div>
       <div className="columns">
@@ -136,7 +232,7 @@ function Landing(props) {
           </div>
           <strong>OK cool... but, why?</strong>
           <div className="block">
-            I'm not sure. That's why I'm doing some experiments ;) and that's
+            I'm not sure. That's why I'm doing some experiments ;) Also, that's
             why your feedback will be highly appreciated. My mail is
             joseguillermoespina at gmail
           </div>
@@ -150,7 +246,7 @@ function Landing(props) {
                   props.setOpcion("ownRepo");
                 }}
               >
-                use your own repositories with the Travis (.org) API key
+                use your own repositories with your Travis (.org) API key
               </button>
             </div>
           </div>
@@ -159,10 +255,11 @@ function Landing(props) {
               <button
                 className="button is-link"
                 onClick={(e) => {
+                  dispatch(setToken("EDA3W8-FZmyIpOO0PutuCQ"));
                   props.setOpcion("theirRepo");
                 }}
               >
-                use other people's repositories with they GitHub user name
+                use other people's repositories with they provider and user name
                 (without any key)
               </button>
             </div>
@@ -178,6 +275,7 @@ function Start() {
   if (opcion == "") return <Landing setOpcion={setOpcion} />;
   if (opcion == "ownRepo") return <OwnRepo setOpcion={setOpcion} />;
   if (opcion == "theirRepo") return <TheirRepo setOpcion={setOpcion} />;
+  if (opcion == "VR") return <TravisClientVR />;
 
   return (
     <div>
@@ -206,7 +304,6 @@ function Start() {
         AR
       </button>
       {opcion == "txt" && <TravisClient />}
-      {opcion == "VR" && <TravisClientVR />}
     </div>
   );
 }

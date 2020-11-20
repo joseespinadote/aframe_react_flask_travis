@@ -17,14 +17,14 @@ function errorsGenerator(aScene, errores) {
     element.parentNode.removeChild(element);
   }
   let counter = 0.3;
-  errores.map((item, index) => {
+  if (errores.length == 0) {
     let entityText = document.createElement("a-entity");
-    let currentText = item;
+    let currentText = "No errors!";
     entityText.setAttribute(
       "text",
       "align:center;width:1.2;value:" + currentText
     );
-    entityText.setAttribute("position", "2 " + counter.toString() + " 0");
+    entityText.setAttribute("position", "2 1 0");
     counter += 0.51;
     entityText.setAttribute(
       "geometry",
@@ -34,7 +34,26 @@ function errorsGenerator(aScene, errores) {
     entityText.setAttribute("rotation", "0 -80 0");
     entityText.setAttribute("class", "log");
     aScene.appendChild(entityText);
-  });
+  } else {
+    errores.map((item, index) => {
+      let entityText = document.createElement("a-entity");
+      let currentText = item;
+      entityText.setAttribute(
+        "text",
+        "align:center;width:1.2;value:" + currentText
+      );
+      entityText.setAttribute("position", "2 " + counter.toString() + " 0");
+      counter += 0.51;
+      entityText.setAttribute(
+        "geometry",
+        "primitive: plane; height: 0.5; width: 1.2"
+      );
+      entityText.setAttribute("material", "color: red");
+      entityText.setAttribute("rotation", "0 -80 0");
+      entityText.setAttribute("class", "log");
+      aScene.appendChild(entityText);
+    });
+  }
 }
 function repoOptionsGenerator(aScene, repos) {
   let zOffset = -2;
