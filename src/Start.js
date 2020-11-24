@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import TravisClientVR from "./TravisClientVR";
+import Escena3D from "./Escena3D";
 import { useSelector, useDispatch } from "react-redux";
 import {
   setToken,
@@ -272,40 +273,11 @@ function Landing(props) {
 
 function Start() {
   const [opcion, setOpcion] = useState("");
+  return <Escena3D />;
   if (opcion == "") return <Landing setOpcion={setOpcion} />;
   if (opcion == "ownRepo") return <OwnRepo setOpcion={setOpcion} />;
   if (opcion == "theirRepo") return <TheirRepo setOpcion={setOpcion} />;
   if (opcion == "VR") return <TravisClientVR />;
-
-  return (
-    <div>
-      <ul>
-        <li></li>
-      </ul>
-      <button
-        onClick={(e) => {
-          setOpcion("txt");
-        }}
-      >
-        text
-      </button>
-      <button
-        onClick={(e) => {
-          setOpcion("VR");
-        }}
-      >
-        VR
-      </button>
-      <button
-        onClick={(e) => {
-          setOpcion("AR");
-        }}
-      >
-        AR
-      </button>
-      {opcion == "txt" && <TravisClient />}
-    </div>
-  );
 }
 
 export default Start;

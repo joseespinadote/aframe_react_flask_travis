@@ -5,9 +5,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <GoogleReCaptchaProvider reCaptchaKey="6LfZJeUZAAAAANfi0BPvcnH_Y5DDi-0Ui0YVtAct">
-          <Start />
-        </GoogleReCaptchaProvider>
+        <Start />
       </div>
     );
   }
