@@ -29,7 +29,7 @@ function elementGenerator(
     let texto = "align: center; value:" + text + "; color:#FFF; width: 3;";
     position && entityEl.setAttribute("position", position);
     rotation && entityEl.setAttribute("rotation", rotation);
-    entityEl.setAttribute("id", tipoObjeto);
+    entityEl.setAttribute("id_objeto", tipoObjeto);
     item_id && entityEl.setAttribute("id_repo", item_id);
     entityEl.setAttribute("click-component", false);
     entityEl.setAttribute(
@@ -47,10 +47,12 @@ function elementGenerator(
     rotation && entityBox.setAttribute("rotation", rotation);
     entityBox.setAttribute("width", "2");
     entityBox.setAttribute("class", "clickable");
+    entityBox.setAttribute("click-component", false);
     entityBox.setAttribute("height", "0.2");
     entityBox.setAttribute("depth", "2");
     entityBox.setAttribute("material", "color: " + color + "; opacity: 0.8");
-    entityBox.setAttribute("click-component", false);
+    entityBox.setAttribute("id_build", item_id);
+    entityBox.setAttribute("id_objeto", tipoObjeto);
     let entityTitle = document.createElement("a-text");
     entityTitle.setAttribute("value", text);
     entityTitle.setAttribute("position", "-1 0 1");
@@ -63,18 +65,7 @@ function elementGenerator(
     entityDate.setAttribute("rotation", "0 0 0");
     entityDate.setAttribute("width", "2");
     entityDate.setAttribute("align", "left");
-    let entityPin = document.createElement("a-image");
-    entityPin.setAttribute("material", "alphaTest: 0.5");
-    entityPin.setAttribute("position", "-0.2 0.05 1.01");
-    entityPin.setAttribute("rotation", "0 0 90");
-    entityPin.setAttribute("scale", "0.2 0.2 0");
-    entityPin.setAttribute("src", "#pin");
-    entityPin.setAttribute("id_artefacto", "pin");
-    entityPin.setAttribute("id_build", item_id);
-    entityPin.setAttribute("class", "pin");
-    entityPin.setAttribute("cursor-pin", false);
     entityBox.appendChild(entityTitle);
-    entityBox.appendChild(entityPin);
     entityBox.appendChild(entityDate);
     aScene.appendChild(entityBox);
   }
@@ -106,11 +97,13 @@ export function repoOptionsGenerator(aScene, repos) {
 }
 
 export function buildOptionsGenerator(aScene, repoTree) {
-  let els = aScene.querySelectorAll(".opcionBuild");
+  /*
+  let els = aScene.querySelectorAll("[id_build]");
   for (var i = els.length - 1; i >= 0; i--) {
     let element = els[i];
     element.parentNode.removeChild(element);
   }
+  */
   let position = { x: -1.5, y: 0.5, z: -2.2 };
   let rotation = { x: 0, y: 15, z: 0 };
 
@@ -129,4 +122,89 @@ export function buildOptionsGenerator(aScene, repoTree) {
       );
       position.y += 0.21;
     });
+}
+
+export function errorsGenerator(aScene, errores) {
+  var els = aScene.querySelectorAll(".log");
+  for (var i = els.length - 1; i >= 0; i--) {
+    let element = els[i];
+    element.parentNode.removeChild(element);
+  }
+  let counter = 0.3;
+  if (errores.length == 0) {
+    let entityText = document.createElement("a-entity");
+    let currentText = "No errors!";
+    entityText.setAttribute(
+      "text",
+      "align:center;width:1.2;value:" + currentText
+    );
+    entityText.setAttribute("position", "2 1 0");
+    counter += 0.51;
+    entityText.setAttribute(
+      "geometry",
+      "primitive: plane; height: 0.5; width: 1.2"
+    );
+    entityText.setAttribute("material", "color: red");
+    entityText.setAttribute("rotation", "0 -80 0");
+    entityText.setAttribute("class", "log");
+    aScene.appendChild(entityText);
+  } else {
+    errores.map((item, index) => {
+      let entityText = document.createElement("a-entity");
+      let currentText = item;
+      entityText.setAttribute(
+        "text",
+        "align:center;width:1.2;value:" + currentText
+      );
+      entityText.setAttribute("position", "2 " + counter.toString() + " 0");
+      counter += 0.51;
+      entityText.setAttribute(
+        "geometry",
+        "primitive: plane; height: 0.5; width: 1.2"
+      );
+      entityText.setAttribute("material", "color: red");
+      entityText.setAttribute("rotation", "0 -80 0");
+      entityText.setAttribute("class", "log");
+      aScene.appendChild(entityText);
+    });
+  }
+}
+
+export function renderBuildMatrix(obj, aScene) {
+  let counter = 1;
+  console.log(obj);
+  obj.jobs.map((item) => {
+    let entityText = document.createElement("a-entity");
+    let distro = item.config.dist ? item.config.dist : "No distro";
+    let lang = item.config.language ? item.config.language : "No lang";
+    let currentText = distro + ", " + lang;
+    entityText.setAttribute(
+      "text",
+      "align:center;width:1.5;value:" + currentText
+    );
+    entityText.setAttribute("position", "0.7 " + counter.toString() + " -1");
+    counter += 0.21;
+    entityText.setAttribute(
+      "geometry",
+      "primitive: plane; height: 0.15; width: 0.5"
+    );
+    let color = item.state == "passed" ? "blue" : "red";
+    entityText.setAttribute("material", "color: " + color);
+    entityText.setAttribute("rotation", "0 -20 0");
+    entityText.setAttribute("id_job", item.id);
+    entityText.setAttribute("id_objeto", "buildMatrix");
+    entityText.setAttribute("class", "clickable");
+    entityText.setAttribute("click-component", false);
+    let entityPet = document.createElement("a-gltf-model");
+    entityPet.setAttribute("src", item.config.os == "linux" ? "#tux" : "#osx");
+    entityPet.setAttribute(
+      "scale",
+      item.config.os == "linux" ? "0.002 0.002 0.002" : "0.005 0.005 0.005"
+    );
+    let positionY = counter - 0.3;
+    entityPet.setAttribute("position", "0.4 " + positionY.toString() + " -1.1");
+    entityPet.setAttribute("class", "buildMatrix");
+    aScene.appendChild(entityPet);
+    aScene.appendChild(entityText);
+  });
 }

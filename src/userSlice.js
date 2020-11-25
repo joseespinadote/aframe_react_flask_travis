@@ -9,6 +9,7 @@ export const userSlice = createSlice({
     user: null,
     repos: null,
     builds: null,
+    selectedBuild: null,
     buildJobs: null,
     job: null,
     jobLog: null,
@@ -30,6 +31,9 @@ export const userSlice = createSlice({
     getBuilds: (state, action) => {
       state.builds = action.payload;
     },
+    setSelectedBuild: (state, action) => {
+      state.selectedBuild = action.payload;
+    },
     getBuildJobs: (state, action) => {
       state.buildJobs = action.payload;
     },
@@ -48,6 +52,7 @@ export const userSlice = createSlice({
       state.user = null;
       state.repos = null;
       state.builds = null;
+      state.selectedBuild = null;
       state.buildJobs = null;
       state.job = null;
       state.jobLog = null;
@@ -62,6 +67,7 @@ const {
   setUser,
   getRepos,
   getBuilds,
+  setSelectedBuild,
   getBuildJobs,
   getJob,
   getJobLog,
@@ -226,11 +232,19 @@ export const getRepoTreeAsync = (token, repo_id) => (dispatch) => {
     .finally(() => dispatch(setLoading(false)));
 };
 
+export const selectBuildById = (build_id) => (dispatch, getState) => {
+  let obj = getState().user.repoTree.builds.find((item) => {
+    return item.id == build_id;
+  });
+  obj ? dispatch(setSelectedBuild(obj)) : dispatch(setSelectedBuild(null));
+};
+
 export const selectLoading = (state) => state.user.loading;
 export const selectToken = (state) => state.user.token;
 export const selectUser = (state) => state.user.user;
 export const selectRepos = (state) => state.user.repos;
 export const selectBuilds = (state) => state.user.builds;
+export const selectSelectedBuild = (state) => state.user.selectedBuild;
 export const selectBuildJobs = (state) => state.user.buildJobs;
 export const selectJob = (state) => state.user.job;
 export const selectJobLog = (state) => state.user.jobLog;

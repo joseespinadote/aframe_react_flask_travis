@@ -12,3 +12,8 @@ class App extends Component {
 }
 
 export default App;
+
+/*
+<GoogleReCaptchaProvider reCaptchaKey="6LfZJeUZAAAAANfi0BPvcnH_Y5DDi-0Ui0YVtAct">
+</GoogleReCaptchaProvider>
+*/
