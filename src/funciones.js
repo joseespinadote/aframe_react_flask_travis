@@ -27,10 +27,20 @@ function elementGenerator(
   if (tipoObjeto == "opcionRepo") {
     let entityEl = document.createElement("a-entity");
     let texto = "align: center; value:" + text + "; color:#FFF; width: 3;";
-    position && entityEl.setAttribute("position", position);
-    rotation && entityEl.setAttribute("rotation", rotation);
+    entityEl.setAttribute("position", position);
+    entityEl.setAttribute(
+      "animation",
+      "property: position; from: " +
+        position.x.toFixed(3) +
+        " " +
+        position.y.toFixed(3) +
+        " " +
+        position.z.toFixed(3) +
+        "; to: 0 1.5 -4; dur: 1000; easing: linear; dir: reverse;"
+    );
+    entityEl.setAttribute("rotation", rotation);
     entityEl.setAttribute("id_objeto", tipoObjeto);
-    item_id && entityEl.setAttribute("id_repo", item_id);
+    entityEl.setAttribute("id_repo", item_id);
     entityEl.setAttribute("click-component", false);
     entityEl.setAttribute(
       "geometry",
@@ -97,13 +107,16 @@ export function repoOptionsGenerator(aScene, repos) {
 }
 
 export function buildOptionsGenerator(aScene, repoTree) {
-  /*
   let els = aScene.querySelectorAll("[id_build]");
   for (var i = els.length - 1; i >= 0; i--) {
     let element = els[i];
     element.parentNode.removeChild(element);
   }
-  */
+  els = aScene.querySelectorAll("[id_repo]");
+  for (var i = els.length - 1; i >= 0; i--) {
+    let element = els[i];
+    element.setAttribute("animation", "dir", "normal");
+  }
   let position = { x: -1.5, y: 0.5, z: -2.2 };
   let rotation = { x: 0, y: 15, z: 0 };
 
@@ -172,8 +185,12 @@ export function errorsGenerator(aScene, errores) {
 
 export function renderBuildMatrix(obj, aScene) {
   let counter = 1;
-  console.log(obj);
+  let colCounter = 0;
   obj.jobs.map((item) => {
+    if (counter > 2.6) {
+      counter = 1;
+      colCounter += 1;
+    }
     let entityText = document.createElement("a-entity");
     let distro = item.config.dist ? item.config.dist : "No distro";
     let lang = item.config.language ? item.config.language : "No lang";
@@ -182,29 +199,45 @@ export function renderBuildMatrix(obj, aScene) {
       "text",
       "align:center;width:1.5;value:" + currentText
     );
-    entityText.setAttribute("position", "0.7 " + counter.toString() + " -1");
-    counter += 0.21;
+    let posX = 0.3 + colCounter / 2;
+    let posY = counter;
+    let posZ = -1.2 + colCounter / 10;
+    let strPos =
+      posX.toString() + " " + posY.toString() + " " + posZ.toString();
+    entityText.setAttribute("position", strPos);
+    counter += 0.12;
     entityText.setAttribute(
       "geometry",
-      "primitive: plane; height: 0.15; width: 0.5"
+      "primitive: plane; height: 0.11; width: 0.5"
     );
     let color = item.state == "passed" ? "blue" : "red";
     entityText.setAttribute("material", "color: " + color);
-    entityText.setAttribute("rotation", "0 -20 0");
+    let rotX = -5 - colCounter * 5;
+    let strRotation = "0 " + rotX + " 0";
+    console.log(strRotation);
+    entityText.setAttribute("rotation", strRotation);
     entityText.setAttribute("id_job", item.id);
     entityText.setAttribute("id_objeto", "buildMatrix");
     entityText.setAttribute("class", "clickable");
     entityText.setAttribute("click-component", false);
     let entityPet = document.createElement("a-gltf-model");
-    entityPet.setAttribute("src", item.config.os == "linux" ? "#tux" : "#osx");
-    entityPet.setAttribute(
-      "scale",
-      item.config.os == "linux" ? "0.002 0.002 0.002" : "0.005 0.005 0.005"
-    );
+    let idPet = "#question";
+    let scalePet = "1 1 1";
+    if (item.config.os == "linux") {
+      idPet = "#tux";
+      scalePet = "0.001 0.001 0.001";
+    }
+    if (item.config.os == "osx") {
+      idPet = "#osx";
+      scalePet = "0.005 0.005 0.005";
+    }
+    entityPet.setAttribute("src", idPet);
+    entityPet.setAttribute("scale", scalePet);
     let positionY = counter - 0.3;
-    entityPet.setAttribute("position", "0.4 " + positionY.toString() + " -1.1");
+    entityPet.setAttribute("position", "-0.25 -0.05 0.05");
+    entityPet.setAttribute("rotation", "0 35 0");
     entityPet.setAttribute("class", "buildMatrix");
-    aScene.appendChild(entityPet);
+    entityText.appendChild(entityPet);
     aScene.appendChild(entityText);
   });
 }

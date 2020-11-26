@@ -10,19 +10,12 @@ import {
 } from "./funciones";
 import {
   setToken,
-  setUserAsync,
-  getReposAsync,
   getExternalReposAsync,
   getRepoTreeAsync,
-  getBuildsAsync,
-  getBuildJobsAsync,
   getJobLogAsync,
   selectToken,
-  selectUser,
   selectLoading,
   selectRepos,
-  selectBuilds,
-  selectBuildJobs,
   selectJobLog,
   selectRepoTree,
   selectBuildById,
@@ -32,6 +25,9 @@ import {
 
 function Escena3D() {
   const [reposRendered, setReposRendered] = useState(false);
+  const [repoTreeRendered, setRepoTreeRendered] = useState(false);
+  const [buildMatrixRendered, setbuildMatrixRendered] = useState(false);
+  const [logRendered, setLogRendered] = useState(false);
   const token = useSelector(selectToken);
   const loading = useSelector(selectLoading);
   const repos = useSelector(selectRepos);
@@ -45,10 +41,22 @@ function Escena3D() {
   useEffect(() => {
     const aScene = document.querySelector("a-scene");
     loading ? showLoading(aScene) : hideLoading(aScene);
-    repos && repoOptionsGenerator(aScene, repos);
-    repoTree && buildOptionsGenerator(aScene, repoTree);
-    selectedBuild && renderBuildMatrix(selectedBuild, aScene);
-    jobLog && errorsGenerator(aScene, jobLog.errores);
+    if (repos && !reposRendered) {
+      repoOptionsGenerator(aScene, repos);
+      setReposRendered(true);
+    }
+    if (repoTree && !repoTreeRendered) {
+      buildOptionsGenerator(aScene, repoTree);
+      setRepoTreeRendered(true);
+    }
+    if (selectedBuild && !buildMatrixRendered) {
+      renderBuildMatrix(selectedBuild, aScene);
+      setbuildMatrixRendered(true);
+    }
+    if (jobLog && !logRendered) {
+      errorsGenerator(aScene, jobLog.errores);
+      setLogRendered(true);
+    }
     if (!AFRAME.components["click-component"]) {
       AFRAME.registerComponent("click-component", {
         init: function () {
@@ -65,6 +73,17 @@ function Escena3D() {
             } else if (id == "buildMatrix") {
               let id_job = this.el.getAttribute("id_job");
               dispatch(getJobLogAsync(token, id_job));
+            } else if (id == "btnReset") {
+              dispatch(clearAll());
+              setReposRendered(false);
+              setRepoTreeRendered(false);
+              setbuildMatrixRendered(false);
+            } else if (id == "btnBack") {
+              let els = aScene.querySelectorAll("[id_repo]");
+              for (var i = els.length - 1; i >= 0; i--) {
+                let element = els[i];
+                element.setAttribute("animation", "dir", "reverse");
+              }
             }
           });
         },
@@ -77,11 +96,15 @@ function Escena3D() {
         <img id="piso" src="/dist/imgs/piso.jpg" />
         <a-asset-item id="tux" src="/dist/tux/scene.gltf"></a-asset-item>
         <a-asset-item id="osx" src="/dist/osx/scene.gltf"></a-asset-item>
+        <a-asset-item
+          id="question"
+          src="/dist/question/scene.gltf"
+        ></a-asset-item>
       </a-assets>
       <a-camera>
         <a-entity
           click-component
-          id="btnBack"
+          id_objeto="btnBack"
           class="clickable"
           text="align: center; value:Back; color:#FFF; width: 0.15; font:kelsonsans"
           geometry="primitive: plane; width: 0.02; height: 0.02"
@@ -104,8 +127,18 @@ function Escena3D() {
         text="align: center; value:load repos; color:#FFF; width: 2;"
         geometry="primitive: plane; width: 0.5; height: 0.5"
         material="color: blue"
-        position="0 0.3 -1"
+        position="0 1 -1"
         rotation="-90 0 0"
+      ></a-entity>
+      <a-entity
+        click-component
+        class="clickable"
+        id_objeto="btnReset"
+        text="align: center; value:RESET; color:#FFF; width: 3;"
+        id_artefacto="btn-reset"
+        geometry="primitive: plane; width: 0.9; height: 0.3"
+        material="color: blue"
+        position="0 0.5 -1"
       ></a-entity>
       <a-sky color="#ECECEC"></a-sky>
     </a-scene>
