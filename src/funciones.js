@@ -222,7 +222,7 @@ export function renderBuildMatrix(obj, aScene) {
     entityText.setAttribute("click-component", false);
     let entityPet = document.createElement("a-gltf-model");
     let idPet = "#question";
-    let scalePet = "1 1 1";
+    let scalePet = "0.001 0.001 0.001";
     if (item.config.os == "linux") {
       idPet = "#tux";
       scalePet = "0.001 0.001 0.001";
