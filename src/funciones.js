@@ -10,7 +10,7 @@ export function showLoading(aScene) {
 }
 export function hideLoading(aScene) {
   let els = aScene.querySelectorAll(".loading");
-  for (var i = els.length - 1; i >= 0; i--) {
+  for (let i = els.length - 1; i >= 0; i--) {
     let element = els[i];
     element.parentNode.removeChild(element);
   }
@@ -27,7 +27,6 @@ function elementGenerator(
   if (tipoObjeto == "opcionRepo") {
     let entityEl = document.createElement("a-entity");
     let texto = "align: center; value:" + text + "; color:#FFF; width: 3;";
-    entityEl.setAttribute("position", position);
     entityEl.setAttribute(
       "animation",
       "property: position; from: " +
@@ -36,7 +35,7 @@ function elementGenerator(
         position.y.toFixed(3) +
         " " +
         position.z.toFixed(3) +
-        "; to: 0 1.5 -4; dur: 1000; easing: linear; dir: reverse;"
+        "; to: 0 -3 -3; dur: 1000; easing: linear; dir: reverse;"
     );
     entityEl.setAttribute("rotation", rotation);
     entityEl.setAttribute("id_objeto", tipoObjeto);
@@ -53,8 +52,7 @@ function elementGenerator(
   } else if (tipoObjeto == "opcionBuild") {
     let color = text == "passed" ? "green" : text == "failed" ? "red" : "gray";
     let entityBox = document.createElement("a-box");
-    position && entityBox.setAttribute("position", position);
-    rotation && entityBox.setAttribute("rotation", rotation);
+    entityBox.setAttribute("rotation", rotation);
     entityBox.setAttribute("width", "2");
     entityBox.setAttribute("class", "clickable");
     entityBox.setAttribute("click-component", false);
@@ -63,6 +61,20 @@ function elementGenerator(
     entityBox.setAttribute("material", "color: " + color + "; opacity: 0.8");
     entityBox.setAttribute("id_build", item_id);
     entityBox.setAttribute("id_objeto", tipoObjeto);
+    entityBox.setAttribute(
+      "animation",
+      "property: position; from: " +
+        position.x.toFixed(3) +
+        " " +
+        position.y.toFixed(3) +
+        " " +
+        position.z.toFixed(3) +
+        "; to: " +
+        position.x.toFixed(3) +
+        " -20 " +
+        position.z.toFixed(3) +
+        "; dur: 1000; easing: linear; dir: reverse;"
+    );
     let entityTitle = document.createElement("a-text");
     entityTitle.setAttribute("value", text);
     entityTitle.setAttribute("position", "-1 0 1");
@@ -108,19 +120,22 @@ export function repoOptionsGenerator(aScene, repos) {
 
 export function buildOptionsGenerator(aScene, repoTree) {
   let els = aScene.querySelectorAll("[id_build]");
-  for (var i = els.length - 1; i >= 0; i--) {
+  for (let i = els.length - 1; i >= 0; i--) {
     let element = els[i];
     element.parentNode.removeChild(element);
   }
   els = aScene.querySelectorAll("[id_repo]");
-  for (var i = els.length - 1; i >= 0; i--) {
+  for (let i = els.length - 1; i >= 0; i--) {
     let element = els[i];
     element.setAttribute("animation", "dir", "normal");
   }
+  let el = aScene.querySelector("#btnBack");
+  el.setAttribute("animation", "dir", "normal");
+
   let position = { x: -1.5, y: 0.5, z: -2.2 };
   let rotation = { x: 0, y: 15, z: 0 };
 
-  repoTree.builds &&
+  if (repoTree.builds && repoTree.builds.length > 0) {
     repoTree.builds.map((item, index) => {
       let texto1 = item.state;
       let texto2 = item.started_at;
@@ -135,55 +150,30 @@ export function buildOptionsGenerator(aScene, repoTree) {
       );
       position.y += 0.21;
     });
-}
-
-export function errorsGenerator(aScene, errores) {
-  var els = aScene.querySelectorAll(".log");
-  for (var i = els.length - 1; i >= 0; i--) {
-    let element = els[i];
-    element.parentNode.removeChild(element);
-  }
-  let counter = 0.3;
-  if (errores.length == 0) {
+  } else {
     let entityText = document.createElement("a-entity");
-    let currentText = "No errors!";
+    let currentText = "No repos!? :-/";
     entityText.setAttribute(
       "text",
-      "align:center;width:1.2;value:" + currentText
+      "align:center;width:3.5;value:" + currentText
     );
-    entityText.setAttribute("position", "2 1 0");
-    counter += 0.51;
+    entityText.setAttribute("position", "0 1.6 -1.5");
     entityText.setAttribute(
       "geometry",
-      "primitive: plane; height: 0.5; width: 1.2"
+      "primitive: plane; height: 1; width: 1"
     );
-    entityText.setAttribute("material", "color: red");
-    entityText.setAttribute("rotation", "0 -80 0");
-    entityText.setAttribute("class", "log");
+    entityText.setAttribute("material", "color: #641e16");
+    entityText.setAttribute("id_build", "-1");
     aScene.appendChild(entityText);
-  } else {
-    errores.map((item, index) => {
-      let entityText = document.createElement("a-entity");
-      let currentText = item;
-      entityText.setAttribute(
-        "text",
-        "align:center;width:1.2;value:" + currentText
-      );
-      entityText.setAttribute("position", "2 " + counter.toString() + " 0");
-      counter += 0.51;
-      entityText.setAttribute(
-        "geometry",
-        "primitive: plane; height: 0.5; width: 1.2"
-      );
-      entityText.setAttribute("material", "color: red");
-      entityText.setAttribute("rotation", "0 -80 0");
-      entityText.setAttribute("class", "log");
-      aScene.appendChild(entityText);
-    });
   }
 }
 
 export function renderBuildMatrix(obj, aScene) {
+  let els = aScene.querySelectorAll("[id_job]");
+  for (let i = els.length - 1; i >= 0; i--) {
+    let element = els[i];
+    element.parentNode.removeChild(element);
+  }
   let counter = 1;
   let colCounter = 0;
   obj.jobs.map((item) => {
@@ -212,14 +202,27 @@ export function renderBuildMatrix(obj, aScene) {
     );
     let color = item.state == "passed" ? "blue" : "red";
     entityText.setAttribute("material", "color: " + color);
-    let rotX = -5 - colCounter * 5;
+    let rotX = -5 - colCounter * 2;
     let strRotation = "0 " + rotX + " 0";
-    console.log(strRotation);
     entityText.setAttribute("rotation", strRotation);
     entityText.setAttribute("id_job", item.id);
     entityText.setAttribute("id_objeto", "buildMatrix");
     entityText.setAttribute("class", "clickable");
     entityText.setAttribute("click-component", false);
+    entityText.setAttribute(
+      "animation",
+      "property: position; from: " +
+        posX.toString() +
+        " " +
+        posY.toString() +
+        " " +
+        posZ.toString() +
+        "; to: " +
+        posX.toString() +
+        " -20 " +
+        posZ.toString() +
+        "; dur: 1000; easing: linear; dir: reverse;"
+    );
     let entityPet = document.createElement("a-gltf-model");
     let idPet = "#question";
     let scalePet = "0.001 0.001 0.001";
@@ -240,4 +243,113 @@ export function renderBuildMatrix(obj, aScene) {
     entityText.appendChild(entityPet);
     aScene.appendChild(entityText);
   });
+}
+
+export function errorsGenerator(aScene, errores) {
+  let els = aScene.querySelectorAll(".log");
+  for (let i = els.length - 1; i >= 0; i--) {
+    let element = els[i];
+    element.parentNode.removeChild(element);
+  }
+  els = aScene.querySelectorAll("[id_job]");
+  for (let i = els.length - 1; i >= 0; i--) {
+    let element = els[i];
+    element.setAttribute("animation", "dir", "normal");
+  }
+  els = aScene.querySelectorAll("[id_build]");
+  for (let i = els.length - 1; i >= 0; i--) {
+    let element = els[i];
+    element.setAttribute("animation", "dir", "normal");
+  }
+  let el = aScene.querySelector("#btnLeft");
+  el.setAttribute("animation", "dir", "normal");
+  el = aScene.querySelector("#btnRight");
+  el.setAttribute("animation", "dir", "normal");
+  let offSet = 0.3;
+  if (errores.length == 0) {
+    let entityText = document.createElement("a-entity");
+    let currentText = "No errors! :-)";
+    entityText.setAttribute(
+      "text",
+      "align:center;width:3.5;value:" + currentText
+    );
+    entityText.setAttribute("position", "0 1.6 -1.5");
+    offSet += 0.51;
+    entityText.setAttribute(
+      "geometry",
+      "primitive: plane; height: 2; width: 3"
+    );
+    entityText.setAttribute("material", "color: #641e16");
+    entityText.setAttribute("class", "log");
+    aScene.appendChild(entityText);
+  } else {
+    let counter = 0;
+    errores.map((item, index) => {
+      counter += 1;
+      let entityText = document.createElement("a-entity");
+      let currentText = item;
+      entityText.setAttribute(
+        "text",
+        "align:center;width:3;value:" +
+          "Error #" +
+          counter.toString() +
+          "\n" +
+          currentText
+      );
+      let strPosition = offSet.toString() + " 1.6 -1.5";
+      entityText.setAttribute("position", strPosition);
+      offSet += 3.3;
+      entityText.setAttribute(
+        "geometry",
+        "primitive: plane; height: 2; width: 3"
+      );
+      entityText.setAttribute("material", "color: #641e16");
+      entityText.setAttribute("class", "log");
+      aScene.appendChild(entityText);
+    });
+  }
+}
+
+export function goBack(aScene) {
+  let els = aScene.querySelectorAll(".log");
+  if (els.length > 0) {
+    let el = aScene.querySelector("#btnLeft");
+    el.setAttribute("animation", "dir", "reverse");
+    el = aScene.querySelector("#btnRight");
+    el.setAttribute("animation", "dir", "reverse");
+    for (let i = els.length - 1; i >= 0; i--) {
+      let element = els[i];
+      element.parentNode.removeChild(element);
+    }
+    els = aScene.querySelectorAll("[id_job]");
+    for (let i = els.length - 1; i >= 0; i--) {
+      let element = els[i];
+      element.setAttribute("animation", "dir", "reverse");
+    }
+    els = aScene.querySelectorAll("[id_build]");
+    for (let i = els.length - 1; i >= 0; i--) {
+      let element = els[i];
+      element.setAttribute("animation", "dir", "reverse");
+    }
+    return;
+  }
+  els = aScene.querySelectorAll("[id_build]");
+  if (els.length > 0) {
+    for (let i = els.length - 1; i >= 0; i--) {
+      let element = els[i];
+      element.parentNode.removeChild(element);
+    }
+    els = aScene.querySelectorAll("[id_job]");
+    for (let i = els.length - 1; i >= 0; i--) {
+      let element = els[i];
+      element.parentNode.removeChild(element);
+    }
+    let el = aScene.querySelector("#btnBack");
+    el.setAttribute("animation", "dir", "reverse");
+    els = aScene.querySelectorAll("[id_repo]");
+    for (let i = els.length - 1; i >= 0; i--) {
+      let element = els[i];
+      element.setAttribute("animation", "dir", "reverse");
+    }
+  }
 }

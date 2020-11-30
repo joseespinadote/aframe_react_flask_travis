@@ -46,6 +46,15 @@ export const userSlice = createSlice({
     getRepoTree: (state, action) => {
       state.repoTree = action.payload;
     },
+    clearJobLog: (state) => {
+      state.jobLog = null;
+    },
+    clearSelectBuildById: (state) => {
+      state.selectedBuild = null;
+    },
+    clearRepoTree: (state) => {
+      state.repoTree = null;
+    },
     clearAll: (state) => {
       state.loading = false;
       state.token = "";
@@ -61,7 +70,13 @@ export const userSlice = createSlice({
   },
 });
 
-export const { setToken, clearAll } = userSlice.actions;
+export const {
+  setToken,
+  clearAll,
+  clearJobLog,
+  clearSelectBuildById,
+  clearRepoTree,
+} = userSlice.actions;
 const {
   setLoading,
   setUser,
@@ -233,6 +248,7 @@ export const getRepoTreeAsync = (token, repo_id) => (dispatch) => {
 };
 
 export const selectBuildById = (build_id) => (dispatch, getState) => {
+  console.log(build_id);
   let obj = getState().user.repoTree.builds.find((item) => {
     return item.id == build_id;
   });
