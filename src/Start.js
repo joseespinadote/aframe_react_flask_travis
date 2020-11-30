@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import TravisClientVR from "./TravisClientVR";
 import Escena3D from "./Escena3D";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -233,9 +232,11 @@ function Landing(props) {
           </div>
           <strong>OK cool... but, why?</strong>
           <div className="block">
-            I'm not sure. That's why I'm doing some experiments ;) Also, that's
-            why your feedback will be highly appreciated. My mail is
-            joseguillermoespina at gmail
+            I would like others (software developers, devops, or any TI
+            professional) could test this prototype and recommendme use cases,
+            features to add, design issues, bugs, etc. That's why your feedback
+            will be highly appreciated. My mail is joseguillermoespina at gmail
+            THANKS!!!
           </div>
           <p className="title is-2">Do you want to try?</p>
           <p className="subtitle is-4">We have have 2 flavors for you</p>
@@ -273,11 +274,10 @@ function Landing(props) {
 
 function Start() {
   const [opcion, setOpcion] = useState("");
-  return <Escena3D />;
   if (opcion == "") return <Landing setOpcion={setOpcion} />;
   if (opcion == "ownRepo") return <OwnRepo setOpcion={setOpcion} />;
   if (opcion == "theirRepo") return <TheirRepo setOpcion={setOpcion} />;
-  if (opcion == "VR") return <TravisClientVR />;
+  if (opcion == "VR") return <Escena3D />;
 }
 
 export default Start;

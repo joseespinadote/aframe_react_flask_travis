@@ -66,9 +66,7 @@ function Escena3D() {
         init: function () {
           let id = this.el.getAttribute("id_objeto");
           this.el.addEventListener("click", (e) => {
-            if (id == "btnLoadRepos") {
-              dispatch(getExternalReposAsync(token, "github/rails"));
-            } else if (id == "opcionRepo") {
+            if (id == "opcionRepo") {
               let id_repo = this.el.getAttribute("id_repo");
               dispatch(getRepoTreeAsync(token, id_repo));
               setRepoTreeRendered(false);
@@ -184,16 +182,6 @@ function Escena3D() {
         repeat="10 10"
         src="#piso"
       ></a-plane>
-      <a-entity
-        click-component
-        id_objeto="btnLoadRepos"
-        class="clickable"
-        text="align: center; value:load repos; color:#FFF; width: 2;"
-        geometry="primitive: plane; width: 0.5; height: 0.5"
-        material="color: blue"
-        position="0 1 -1"
-        rotation="-90 0 0"
-      ></a-entity>
       <a-sky color="#ECECEC"></a-sky>
     </a-scene>
   );
