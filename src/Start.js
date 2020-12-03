@@ -266,6 +266,38 @@ function Landing(props) {
               </button>
             </div>
           </div>
+          <h1 class="title">Object representation</h1>
+          <div class="columns">
+            <div class="column">
+              <h2 class="subtitle">Repositories</h2>
+              <figure class="image is-128x128">
+                <img class="is-rounded" src="./dist/repos.PNG" />
+              </figure>
+            </div>
+            <div class="column">
+              <h2 class="subtitle">Build jobs</h2>
+              <figure class="image is-128x128">
+                <img class="is-rounded" src="./dist/builds.PNG" />
+                Note: Failed builds will be in red, cancelled in gray, and
+                passed in green
+              </figure>
+            </div>
+            <div class="column">
+              <h2 class="subtitle">Build matrix</h2>
+              <figure class="image is-128x128">
+                <img class="is-rounded" src="./dist/buildMatrix.PNG" />
+                Note: Failed build jobs will be un red, passed in blue
+              </figure>
+            </div>
+            <div class="column">
+              <h2 class="subtitle">Error log</h2>
+              <figure class="image is-128x128">
+                <img class="is-rounded" src="./dist/logError.PNG" />
+                Note: Is an array of substrings containing the word 'error',
+                plus an after/before offset
+              </figure>
+            </div>
+          </div>
         </div>
       </div>
     </div>

@@ -139,7 +139,7 @@ function Escena3D() {
           src="/dist/question/scene.gltf"
         ></a-asset-item>
       </a-assets>
-      <a-camera>
+      <a-camera position="0 1.5 1">
         <a-entity
           click-component
           id="btnBack"

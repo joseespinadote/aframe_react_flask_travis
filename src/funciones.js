@@ -232,7 +232,7 @@ export function renderBuildMatrix(obj, aScene) {
     }
     if (item.config.os == "osx") {
       idPet = "#osx";
-      scalePet = "0.005 0.005 0.005";
+      scalePet = "0.0025 0.0025 0.0025";
     }
     entityPet.setAttribute("src", idPet);
     entityPet.setAttribute("scale", scalePet);
