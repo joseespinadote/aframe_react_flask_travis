@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Proyecto de Barros, Espina y Helguero, para Web de Datos</title>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
+    <script src="https://unpkg.com/aframe-look-at-component@0.8.0/dist/aframe-look-at-component.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar-nft.js"></script>
+    <script>
+      var patromonios = [];
+      function makeRequest(method, url, data) {
+        return new Promise(function (resolve, reject) {
+          var xhr = new XMLHttpRequest();
+          xhr.open(method, url);
+          xhr.onload = function () {
+            if (this.status >= 200 && this.status < 300) {
+              resolve(xhr.response);
+            } else {
+              reject({
+                status: this.status,
+                statusText: xhr.statusText,
+              });
+            }
+          };
+          xhr.onerror = function () {
+            reject({
+              status: this.status,
+              statusText: xhr.statusText,
+            });
+          };
+          if (method == "POST" && data) {
+            xhr.send(data);
+          } else {
+            xhr.send();
+          }
+        });
+      }
+      function getLocation() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(getPosition);
+        } else {
+          alert("Este sitio sólo funciona con geolocalización");
+        }
+      }
+      function getPosition(position) {
+        makeRequest(
+          "GET",
+          "/request?lat=" +
+            position.coords.longitude +
+            "&long=" +
+            position.coords.latitude
+        ).then(function (data) {
+          const aScene = document.querySelector("a-scene");
+          let loadingObject = document.querySelector("#loading");
+          if (loadingObject)
+            loadingObject.parentNode.removeChild(loadingObject);
+          let elements = JSON.parse(data);
+          elements.forEach((element, index) => {
+            patromonios.push(element);
+            let realLong = element.lat;
+            let realLat = element.long;
+            let newObject = document.createElement("a-gltf-model");
+            newObject.setAttribute("src", "#pillar");
+            newObject.setAttribute("scale", "0.1 0.1 0.1");
+            newObject.setAttribute("class", "clickable");
+            newObject.setAttribute("click-component", false);
+            newObject.setAttribute("idPatrimonio", index.toString());
+            let strLocation =
+              "latitude: " +
+              realLat.toString() +
+              "; longitude: " +
+              realLong.toString();
+            newObject.setAttribute("gps-entity-place", strLocation);
+            aScene.appendChild(newObject);
+          });
+          /*
+          // FAKE OBJECT
+          let newObject = document.createElement("a-gltf-model");
+          newObject.setAttribute("src", "#pillar");
+          newObject.setAttribute("scale", "0.1 0.1 0.1");
+          newObject.setAttribute("class", "clickable");
+          newObject.setAttribute("click-component", false);
+          newObject.setAttribute("idPatrimonio", "0");
+          let strLocation = "latitude: -33.600985; longitude: -70.561609";
+          newObject.setAttribute("gps-entity-place", strLocation);
+          aScene.appendChild(newObject);
+          // FAKE OBJECT
+          //fake object 2
+          newObject = document.createElement("a-entity");
+          newObject.setAttribute("class", "clickable");
+          newObject.setAttribute("click-component", false);
+          newObject.setAttribute(
+            "geometry",
+            "primitive: box; width: 1; depth: 1; height:50"
+          );
+          newObject.setAttribute("material", "color: yellow");
+          newObject.setAttribute("idPatrimonio", "0");
+          strLocation = "latitude: -33.600985; longitude: -70.561609";
+          newObject.setAttribute("gps-entity-place", strLocation);
+          //fake object
+          aScene.appendChild(newObject);
+          */
+        });
+      }
+      function go() {
+        getLocation();
+        if (!AFRAME.components["click-component"]) {
+          AFRAME.registerComponent("click-component", {
+            init: function () {
+              this.el.addEventListener("mouseenter", (e) => {
+                let popup = document.querySelector("#popup");
+                let idPatrimonio = this.el.getAttribute("idPatrimonio");
+                let textValue =
+                  "value:" + patromonios[idPatrimonio].nombre_patrimonio;
+                if (patromonios[idPatrimonio].description)
+                  textValue =
+                    textValue + "\n" + patromonios[idPatrimonio].description;
+                popup.setAttribute("visible", true);
+                popup.setAttribute("text", textValue);
+              });
+              this.el.addEventListener("mouseleave", (e) => {
+                let popup = document.querySelector("#popup");
+                popup.setAttribute("visible", false);
+                popup.setAttribute("text", "value:...");
+              });
+            },
+          });
+        }
+      }
+    </script>
+  </head>
+  <body onload="go()">
+    <noscript> You need to enable JavaScript to run this app. </noscript>
+    <a-scene
+      embedded
+      vr-mode-ui="enabled: false"
+      arjs="sourceType: webcam; debugUIEnabled: false;"
+      raycaster="objects: .clickable"
+    >
+      <a-assets>
+        <a-asset-item
+          id="pillar"
+          src="/dist/stone_pillar/scene.gltf"
+        ></a-asset-item>
+      </a-assets>
+      <a-camera
+        id="camera1"
+        look-controls-enabled="false"
+        arjs-look-controls="smoothingFactor: 0.4"
+        gps-camera="gpsMinDistance: 3"
+        rotation-reader
+      >
+        <a-cursor fuse="true" fuseTimeout="1">
+          <a-animation
+            begin="click"
+            easing="ease-in"
+            attribute="scale"
+            fill="backwards"
+            from="1 1 1"
+            to="2 2 2"
+          ></a-animation>
+          <a-animation
+            begin="cursor-fusing"
+            easing="ease-in"
+            attribute="scale"
+            fill="forwards"
+            from="2 2 2"
+            to="1 1 1"
+          ></a-animation>
+        </a-cursor>
+        <a-entity
+          id="loading"
+          text="align: center; value:Inicializando...; color:#FFF; width: 1.1; font:kelsonsans"
+          geometry="primitive: plane; width: 0.5; height: 0.25"
+          material="color: black"
+          position="0 0.5 -3"
+        ></a-entity>
+        <a-entity
+          id="popup"
+          visible="false"
+          text="value:"
+          geometry="primitive: plane; width: 0.5; height: 0.25"
+          material="color: black"
+          position="0 0.5 -2"
+        ></a-entity>
+      </a-camera>
+    </a-scene>
+  </body>
+</html>
