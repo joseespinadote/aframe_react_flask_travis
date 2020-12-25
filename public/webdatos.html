@@ -50,9 +50,9 @@
         makeRequest(
           "GET",
           "/request?lat=" +
-            position.coords.longitude +
+            position.coords.latitude +
             "&long=" +
-            position.coords.latitude
+            position.coords.longitude
         ).then(function (data) {
           const aScene = document.querySelector("a-scene");
           let loadingObject = document.querySelector("#loading");
@@ -65,7 +65,7 @@
             let realLat = element.long;
             let newObject = document.createElement("a-gltf-model");
             newObject.setAttribute("src", "#pillar");
-            newObject.setAttribute("scale", "0.1 0.1 0.1");
+            newObject.setAttribute("scale", "0.2 0.2 0.2");
             newObject.setAttribute("class", "clickable");
             newObject.setAttribute("click-component", false);
             newObject.setAttribute("idPatrimonio", index.toString());
@@ -77,33 +77,29 @@
             newObject.setAttribute("gps-entity-place", strLocation);
             aScene.appendChild(newObject);
           });
-          /*
-          // FAKE OBJECT
+          // FAKE OBJECTs
           let newObject = document.createElement("a-gltf-model");
           newObject.setAttribute("src", "#pillar");
-          newObject.setAttribute("scale", "0.1 0.1 0.1");
+          newObject.setAttribute("scale", "0.2 0.2 0.2");
           newObject.setAttribute("class", "clickable");
           newObject.setAttribute("click-component", false);
           newObject.setAttribute("idPatrimonio", "0");
-          let strLocation = "latitude: -33.600985; longitude: -70.561609";
+          let strLocation =
+            "latitude: -33.44783401489258; longitude: -70.64559173583984";
           newObject.setAttribute("gps-entity-place", strLocation);
           aScene.appendChild(newObject);
-          // FAKE OBJECT
-          //fake object 2
-          newObject = document.createElement("a-entity");
+          /*
+          newObject = document.createElement("a-gltf-model");
+          newObject.setAttribute("src", "#pillar");
+          newObject.setAttribute("scale", "0.2 0.2 0.2");
           newObject.setAttribute("class", "clickable");
           newObject.setAttribute("click-component", false);
-          newObject.setAttribute(
-            "geometry",
-            "primitive: box; width: 1; depth: 1; height:50"
-          );
-          newObject.setAttribute("material", "color: yellow");
           newObject.setAttribute("idPatrimonio", "0");
-          strLocation = "latitude: -33.600985; longitude: -70.561609";
+          strLocation = "latitude: -33.598865; longitude: -70.561798";
           newObject.setAttribute("gps-entity-place", strLocation);
-          //fake object
           aScene.appendChild(newObject);
           */
+          // FAKE OBJECTs
         });
       }
       function go() {
@@ -150,8 +146,8 @@
       <a-camera
         id="camera1"
         look-controls-enabled="false"
-        arjs-look-controls="smoothingFactor: 0.4"
-        gps-camera="gpsMinDistance: 3"
+        arjs-look-controls="smoothingFactor: 0.1"
+        gps-camera="gpsMinDistance: 5"
         rotation-reader
       >
         <a-cursor fuse="true" fuseTimeout="1">

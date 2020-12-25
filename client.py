@@ -1,7 +1,7 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
 import sys
 import requests
-
+from geopy import distance
 
 def run_sparql_query(endpoint, query, nattempts=3):
     sparql = SPARQLWrapper(endpoint)
@@ -19,41 +19,50 @@ def run_sparql_query(endpoint, query, nattempts=3):
 
 
 def get_historical_events(lat, long, distance_threshold=10, lang="es"):
-    wdQuery = f"""SELECT DISTINCT ?patrimonio ?type ?nombre_patrimonio ?distance ?location
+    wdQuery = f"""SELECT DISTINCT ?patrimonio ?nombre_patrimonio ?distance ?location
     WHERE 
     {{
-        BIND('Point({lat} {long})'^^geo:wktLiteral AS ?myLocation)
         ?patrimonio wdt:P31/wdt:P279* wd:Q2434238; 
+                    wdt:P17 wd:Q298;
                     wdt:P625 ?location;
                     rdfs:label ?nombre_patrimonio;
-                    wdt:P31 ?type. 
-        BIND(geof:distance(?myLocation, ?location) AS ?distance)
-        FILTER(?distance < {distance_threshold} && lang(?nombre_patrimonio) = "{lang}")
+        FILTER(lang(?nombre_patrimonio) = "es")
     }}
-    ORDER BY ASC (?distance)
     """
     endpoint = "http://query.wikidata.org/sparql"
     response = run_sparql_query(endpoint, wdQuery)
-    return wikidata_to_json(response)
+    return wikidata_to_json(response, distance_threshold, lat, long)
 
 
-def wikidata_to_json(results):
+def wikidata_to_json(results, distance_threshold, lat, long):
     return_json = []
     knownTypes = { "Q2065736" : "cultural property", "Q4989906" : "monument", "Q811979" : "architectural structure", "Q35112127" : "historic building" }
     for r in results:
         result = {}
+        too_far = False
         for key in r:
             if key == "distance":
-                result[key] = round(float(r[key]["value"]), 2)
+                current_distance = round(float(r[key]["value"]), 2)
+                if current_distance > 10 :
+                    continue
+                result[key] = current_distance
             elif key == "location":
-                coords = r[key]["value"][6:-1].split(" ")
+                leftIndex = r[key]["value"].find('(')
+                rightIndex = r[key]["value"].find(')')
+                if leftIndex < 0 or rightIndex < 0 :
+                    continue
+                coords = r[key]["value"][leftIndex+1:rightIndex].split(" ")
+                point_1 = (lat, long)
+                point_2 = (coords[1], coords[0])
+                if distance.distance(point_1, point_2).km > distance_threshold :
+                    too_far = True
                 result["lat"] = coords[0]
                 result["long"] = coords[1]
-            elif key == "type":
-                entityQ = r[key]["value"][31:]
-                result[key] = knownTypes[entityQ] if entityQ in knownTypes else "other"
+
             else:
                 result[key] = r[key]["value"]
+        if too_far :
+            continue
         return_json.append(result)
     return return_json
 
