@@ -77,29 +77,6 @@
             newObject.setAttribute("gps-entity-place", strLocation);
             aScene.appendChild(newObject);
           });
-          // FAKE OBJECTs
-          let newObject = document.createElement("a-gltf-model");
-          newObject.setAttribute("src", "#pillar");
-          newObject.setAttribute("scale", "0.2 0.2 0.2");
-          newObject.setAttribute("class", "clickable");
-          newObject.setAttribute("click-component", false);
-          newObject.setAttribute("idPatrimonio", "0");
-          let strLocation =
-            "latitude: -33.44783401489258; longitude: -70.64559173583984";
-          newObject.setAttribute("gps-entity-place", strLocation);
-          aScene.appendChild(newObject);
-          /*
-          newObject = document.createElement("a-gltf-model");
-          newObject.setAttribute("src", "#pillar");
-          newObject.setAttribute("scale", "0.2 0.2 0.2");
-          newObject.setAttribute("class", "clickable");
-          newObject.setAttribute("click-component", false);
-          newObject.setAttribute("idPatrimonio", "0");
-          strLocation = "latitude: -33.598865; longitude: -70.561798";
-          newObject.setAttribute("gps-entity-place", strLocation);
-          aScene.appendChild(newObject);
-          */
-          // FAKE OBJECTs
         });
       }
       function go() {
